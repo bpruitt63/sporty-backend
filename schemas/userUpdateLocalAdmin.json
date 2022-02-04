@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/userUpdateLocalAdmin.json",
+    "type": "object",
+    "properties": {
+        "adminLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+        }
+    },
+    "additionalProperties": false,
+    "required": []
+}
