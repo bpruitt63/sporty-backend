@@ -2,8 +2,12 @@ const express = require("express");
 const jsonschema = require('jsonschema');
 const Organization = require('../models/organization');
 const organizationNewSchema = require('../schemas/organizationNew.json');
-const { BadRequestError } = require("../expressError");
-const { ensureLoggedIn, ensureLocalAdmin } = require('../middleware/auth');
+const teamNameSchema = require('../schemas/teamName.json');
+const seasonNameSchema = require('../schemas/seasonName.json');
+const { BadRequestError, ForbiddenError } = require("../expressError");
+const { ensureLoggedIn, 
+    ensureLocalAdmin, 
+    ensureLocalEditor } = require('../middleware/auth');
 
 const router = new express.Router();
 
@@ -57,6 +61,110 @@ router.delete('/:id', ensureLocalAdmin, async function(req, res, next){
     try {
         await Organization.remove(req.params.id);
         return res.json({deleted: req.params.id});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.post('/:id/:seasonId/teams', ensureLocalEditor, async function(req, res, next){
+    try {
+        const validator = jsonschema.validate(req.body.teams, teamNameSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        };
+        const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Season does not belong to this organization`);
+        const teams = await Organization.addTeams(req.body.teams, req.params.seasonId);
+        return res.json({teams});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.get('/:id/:seasonId/teams', async function(req, res, next){
+    try {
+        const teams = await Organization.getTeams(req.params.seasonId);
+        return res.json({teams});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.patch('/:id/:seasonId/:teamId', ensureLocalEditor, async function(req, res, next){
+    try {
+        const validator = jsonschema.validate([req.body.team], teamNameSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        };
+        const checkId = (await Organization.getTeam(req.params.teamId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and team don't match`);
+        const team = await Organization.updateTeam(req.params.teamId, 
+                                                    req.body.team);
+        return res.json({team});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.delete('/:id/:seasonId/:teamId', ensureLocalEditor, async function(req, res, next){
+    try {
+        const checkId = (await Organization.getTeam(req.params.teamId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and team don't match`);
+        await Organization.removeTeam(req.params.teamId);
+        return res.json({deleted: req.params.teamId});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.post('/:id/seasons', ensureLocalEditor, async function(req, res, next){
+    try {
+        const validator = jsonschema.validate(req.body, seasonNameSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        };
+        const season = await Organization.addSeason(req.body.title, req.params.id);
+        return res.json({season});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.get('/:id/seasons', async function(req, res, next){
+    try {
+        const seasons = await Organization.getSeasons(req.params.id);
+        return res.json({seasons});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.patch('/:id/season:seasonId', ensureLocalEditor, async function(req, res, next){
+    try {
+        const validator = jsonschema.validate(req.body, seasonNameSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        };
+        const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+        const season = await Organization.updateSeason(req.params.seasonId, 
+                                                    req.body.title);
+        return res.json({season});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.delete('/:id/season:seasonId', ensureLocalEditor, async function(req, res, next){
+    try {
+        const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+        await Organization.removeSeason(req.params.seasonId);
+        return res.json({deleted: req.params.seasonId});
     } catch(err) {
         return next(err);
     };

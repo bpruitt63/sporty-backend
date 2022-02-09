@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/seasonName.json",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+      "title"
+    ]
+}

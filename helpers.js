@@ -29,6 +29,34 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     };
 };
 
+function sqlForVariableArraySize(dataArray) {
+    if (!dataArray[0]) throw new BadRequestError("No data");
+
+    const dollars = [];
+    for (let i = 1; i <= dataArray.length; i++) {
+        dollars.push(`($${i}, $${dataArray.length + 1})`);
+    };
+    return dollars.join(', ')
+};
+
+function sqlForObjectArray(dataArray) {
+    if (dataArray.length === 0) throw new BadRequestError("No data");
+    let dollars = '';
+    let values = [];
+    for (let i = 0; i < dataArray.length; i++) {
+        const vals = Object.values(dataArray[i]);
+        const dols = [];
+        for (let j = 0; j < vals.length; j++) {
+            dols.push(`$${(i * 8) + (j + 1)}`);
+        };
+        values = [...values, ...vals];
+        dollars = dollars + (dollars ? ', ' : '') +
+            `(${dols.join(', ')}, $${(dataArray.length * 8) + 1})`;
+    };
+    return {values, dollars};
+};
+
+
 /**Transforms array of user/organization objects into
  * single user object with array of organization objects
  */
@@ -44,15 +72,12 @@ function formatUserInfo(userRows) {
         user.organizations[row.orgId] = {orgName: row.orgName,
                                         adminLevel: row.adminLevel}
     };
-    // for (let row of userRows){
-    //     let org = {
-    //         orgId: row.orgId,
-    //         orgName: row.orgName,
-    //         adminLevel: row.adminLevel
-    //     };
-    //     user.organizations.push(org);
-    // };
     return user;
 };
+
   
-module.exports = { createToken, sqlForPartialUpdate, formatUserInfo };
+module.exports = { createToken, 
+    sqlForPartialUpdate, 
+    formatUserInfo,
+    sqlForVariableArraySize,
+    sqlForObjectArray};

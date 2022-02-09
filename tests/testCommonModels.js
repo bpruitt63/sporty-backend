@@ -4,11 +4,15 @@ const db = require("../db.js");
 const { BCRYPT_WORK_FACTOR } = require("../config");
 
 const testOrgIds = [];
+const testTeamIds = [];
+const testSeasonIds = [];
 
 async function commonBeforeAll() {
     await db.query("DELETE FROM organizations");
     await db.query("DELETE FROM users");
     await db.query("DELETE FROM user_organizations");
+    await db.query("DELETE FROM teams");
+    await db.query("DELETE FROM seasons");
 
     await db.query(`
     INSERT INTO users (email, pwd, first_name, last_name, super_admin)
@@ -50,6 +54,22 @@ async function commonBeforeAll() {
             $2,
             1)`,
             [testOrgIds[0], testOrgIds[1]]);
+
+    const resultsSeasons = await db.query(`
+    INSERT INTO seasons (title, org_id)
+    VALUES ('testSeason1', $1),
+            ('testSeason2', $1)
+    RETURNING id`,
+    [testOrgIds[0]]);
+    testSeasonIds.splice(0, 0, ...resultsSeasons.rows.map(r => r.id));
+
+    const resultsTeams = await db.query(`
+    INSERT INTO teams (team_name, season_id)
+    VALUES ('testTeam1', $1),
+            ('testTeam2', $1)
+    RETURNING id`,
+    [testSeasonIds[0]]);
+    testTeamIds.splice(0, 0, ...resultsTeams.rows.map(r => r.id));
 };
 
 async function commonBeforeEach() {
@@ -71,4 +91,6 @@ module.exports = {
     commonAfterEach,
     commonAfterAll,
     testOrgIds,
+    testTeamIds,
+    testSeasonIds
 };

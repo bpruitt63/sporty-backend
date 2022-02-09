@@ -19,25 +19,27 @@ CREATE TABLE user_organizations (
     PRIMARY KEY (email, org_id)
 );
 
-CREATE TABLE teams (
-    id SERIAL PRIMARY KEY,
-    team_name TEXT NOT NULL,
-    record TEXT
-);
-
 CREATE TABLE seasons (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     org_id INTEGER REFERENCES organizations ON DELETE CASCADE
 );
 
+CREATE TABLE teams (
+    id SERIAL PRIMARY KEY,
+    team_name TEXT NOT NULL,
+    season_id INTEGER REFERENCES seasons ON DELETE CASCADE
+);
+
 CREATE TABLE games (
     id SERIAL PRIMARY KEY,
     team_1_id INTEGER REFERENCES teams,
     team_2_id INTEGER REFERENCES teams,
-    season_id INTEGER REFERENCES seasons,
-    game_date DATE,
+    season_id INTEGER REFERENCES seasons ON DELETE CASCADE,
+    game_date TEXT,
     game_time TEXT,
-    result TEXT,
+    game_location TEXT,
+    team_1_score INTEGER,
+    team_2_score INTEGER,
     notes TEXT
 );

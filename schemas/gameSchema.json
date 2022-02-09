@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/gameSchema.json",
+    "type": "object",
+    "properties": {
+        "team1Id" : {
+            "type": "integer"
+        },
+        "team2Id" : {
+            "type": "integer"
+        },
+        "gameDate" : {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 7
+        },
+        "gameTime" : {
+            "type": "string",
+            "minLength": 7,
+            "maxLength": 8
+        },
+        "gameLocation" : {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "team1Score" : {
+            "type": "integer",
+            "minimum": 0
+        },
+        "team2Score" : {
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "team1Id",
+        "team2Id"
+    ]
+}
