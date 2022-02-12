@@ -33,8 +33,8 @@ CREATE TABLE teams (
 
 CREATE TABLE games (
     id SERIAL PRIMARY KEY,
-    team_1_id INTEGER REFERENCES teams,
-    team_2_id INTEGER REFERENCES teams,
+    team_1_id INTEGER REFERENCES teams ON DELETE CASCADE,
+    team_2_id INTEGER REFERENCES teams ON DELETE CASCADE,
     season_id INTEGER REFERENCES seasons ON DELETE CASCADE,
     game_date TEXT,
     game_time TEXT,

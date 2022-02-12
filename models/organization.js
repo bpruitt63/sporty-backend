@@ -1,6 +1,8 @@
 const db = require("../db");
 const { NotFoundError, BadRequestError } = require("../expressError");
-const { sqlForVariableArraySize, sqlForObjectArray } = require("../helpers");
+const { sqlForVariableArraySize, 
+        sqlForObjectArray,
+        sqlForPartialUpdate } = require("../helpers");
 
 class Organization {
 
@@ -273,6 +275,68 @@ class Organization {
         const games = result.rows;
         if (!games[0]) throw new BadRequestError('Games not added');
         return games;
+    };
+
+    //Get game's organization
+    static async getGameOrganization(gameId) {
+        const result = await db.query(
+            `SELECT org_id AS "orgId"
+            FROM games JOIN seasons
+            ON season_id = seasons.id
+            WHERE games.id = $1`,
+            [gameId]
+        );
+        const org = result.rows[0];
+        if (!org) throw new NotFoundError('Game not found');
+        return org;
+    };
+
+    //Edit game info
+    static async updateGame(gameId, data) {
+        
+        const { setCols, values } = sqlForPartialUpdate(
+            data,
+            {   team1Id: "team_1_id",
+                team2Id: "team_2_id",
+                gameDate: "game_date",
+                gameTime: "game_time",
+                gameLocation: "game_location",
+                team1Score: "team_1_score",
+                team2Score: "team_2_score"
+            });
+        const gameVarIdx = "$" + (values.length + 1);
+
+        const querySql = `WITH updated AS (
+            UPDATE games 
+            SET ${setCols} 
+            WHERE id = ${gameVarIdx} 
+            RETURNING id AS "gameId",
+                            team_1_id AS "team1Id",
+                            team_2_id AS "team2Id",
+                            season_id AS "seasonId",
+                            game_date AS "gameDate",
+                            game_time AS "gameTime",
+                            game_location AS "gameLocation",
+                            team_1_score AS "team1Score",
+                            team_2_score AS "team2Score",
+                            notes)
+            SELECT * FROM (
+                SELECT updated.*, (
+                    SELECT team_name FROM teams
+                    WHERE updated."team1Id" = id
+                ) AS "team1Name",
+                (
+                    SELECT team_name FROM teams
+                    WHERE updated."team2Id" = id
+                ) AS "team2Name" FROM updated
+            ) AS allInfo`
+        
+        const result = await db.query(querySql, [...values, gameId]);
+        const game = result.rows[0];
+                            
+        if (!game) throw new NotFoundError(`Game not found`);
+                            
+        return game;
     };
 
 };

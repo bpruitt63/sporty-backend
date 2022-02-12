@@ -4,6 +4,7 @@ const Organization = require('../models/organization');
 const organizationNewSchema = require('../schemas/organizationNew.json');
 const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
+const gameSchema = require('../schemas/gameSchema.json');
 const { BadRequestError, ForbiddenError } = require("../expressError");
 const { ensureLoggedIn, 
     ensureLocalAdmin, 
@@ -66,7 +67,7 @@ router.delete('/:id', ensureLocalAdmin, async function(req, res, next){
     };
 });
 
-router.post('/:id/:seasonId/teams', ensureLocalEditor, async function(req, res, next){
+router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body.teams, teamNameSchema);
         if (!validator.valid) {
@@ -82,7 +83,7 @@ router.post('/:id/:seasonId/teams', ensureLocalEditor, async function(req, res, 
     };
 });
 
-router.get('/:id/:seasonId/teams', async function(req, res, next){
+router.get('/:id/seasons/:seasonId/teams', async function(req, res, next){
     try {
         const teams = await Organization.getTeams(req.params.seasonId);
         return res.json({teams});
@@ -91,7 +92,7 @@ router.get('/:id/:seasonId/teams', async function(req, res, next){
     };
 });
 
-router.patch('/:id/:seasonId/:teamId', ensureLocalEditor, async function(req, res, next){
+router.patch('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate([req.body.team], teamNameSchema);
         if (!validator.valid) {
@@ -108,7 +109,7 @@ router.patch('/:id/:seasonId/:teamId', ensureLocalEditor, async function(req, re
     };
 });
 
-router.delete('/:id/:seasonId/:teamId', ensureLocalEditor, async function(req, res, next){
+router.delete('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async function(req, res, next){
     try {
         const checkId = (await Organization.getTeam(req.params.teamId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and team don't match`);
@@ -142,7 +143,7 @@ router.get('/:id/seasons', async function(req, res, next){
     };
 });
 
-router.patch('/:id/season:seasonId', ensureLocalEditor, async function(req, res, next){
+router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, seasonNameSchema);
         if (!validator.valid) {
@@ -159,12 +160,48 @@ router.patch('/:id/season:seasonId', ensureLocalEditor, async function(req, res,
     };
 });
 
-router.delete('/:id/season:seasonId', ensureLocalEditor, async function(req, res, next){
+router.delete('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
         await Organization.removeSeason(req.params.seasonId);
         return res.json({deleted: req.params.seasonId});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(req, res, next){
+    try {
+        const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+        
+        const validator = jsonschema.validate(req.body.games, gameSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        };
+
+        const games = await Organization.addGames(req.params.seasonId, req.body.games);
+        return res.json({games});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.patch('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async function(req, res, next){
+    try {
+        const checkId = (await Organization.getGameOrganization(req.params.gameId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and game don't match`);
+
+        const validator = jsonschema.validate([req.body.game], gameSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
+        };
+
+        const game = await Organization.updateGame(req.params.gameId, req.body.game);
+        return res.json({game});
     } catch(err) {
         return next(err);
     };

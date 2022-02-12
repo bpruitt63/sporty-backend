@@ -12,7 +12,8 @@ const {
     commonAfterAll,
     testOrgIds,
     testTeamIds,
-    testSeasonIds
+    testSeasonIds,
+    testGameIds
 } = require("./testCommonModels");
 
 beforeAll(commonBeforeAll);
@@ -318,24 +319,24 @@ describe("addGames", function(){
     test("works", async function(){
         const res = await Organization.addGames(testSeasonIds[0], 
                                 [{
-                                    'team1Id': testTeamIds[1],
-                                    'team2Id': testTeamIds[0],
-                                    'gameDate': '12/2/21',
-                                    'gameTime': '1:00pm',
-                                    'gameLocation': 'testLocation',
-                                    'team1Score': 42,
-                                    'team2Score': 21,
-                                    'notes': 'what a test'
+                                    team1Id: testTeamIds[1],
+                                    team2Id: testTeamIds[0],
+                                    gameDate: '12/2/21',
+                                    gameTime: '1:00 pm',
+                                    gameLocation: 'testLocation',
+                                    team1Score: 42,
+                                    team2Score: 21,
+                                    notes: 'what a test'
                                 },
                                 {
-                                    'team1Id': testTeamIds[0],
-                                    'team2Id': testTeamIds[1],
-                                    'gameDate': '12/3/21',
-                                    'gameTime': '2:00pm',
-                                    'gameLocation': 'testLocation2',
-                                    'team1Score': 55,
-                                    'team2Score': 77,
-                                    'notes': 'not a test'
+                                    team1Id: testTeamIds[0],
+                                    team2Id: testTeamIds[1],
+                                    gameDate: '12/3/21',
+                                    gameTime: '02:00 pm',
+                                    gameLocation: 'testLocation2',
+                                    team1Score: 55,
+                                    team2Score: 77,
+                                    notes: 'not a test'
                                 }]);
         expect(res).toEqual([{
                                     gameId: expect.any(Number),
@@ -343,7 +344,7 @@ describe("addGames", function(){
                                     team1Id: testTeamIds[1],
                                     team2Id: testTeamIds[0],
                                     gameDate: '12/2/21',
-                                    gameTime: '1:00pm',
+                                    gameTime: '1:00 pm',
                                     gameLocation: 'testLocation',
                                     team1Score: 42,
                                     team2Score: 21,
@@ -355,11 +356,58 @@ describe("addGames", function(){
                                     team1Id: testTeamIds[0],
                                     team2Id: testTeamIds[1],
                                     gameDate: '12/3/21',
-                                    gameTime: '2:00pm',
+                                    gameTime: '02:00 pm',
                                     gameLocation: 'testLocation2',
                                     team1Score: 55,
                                     team2Score: 77,
                                     notes: 'not a test'
                                 }]);
     });
-})
+});
+
+//Get game organization
+describe("getGameOrganization", function(){
+    test("works", async function(){
+        const res = await Organization.getGameOrganization(testGameIds[0]);
+        expect(res).toEqual({orgId: testOrgIds[0]});
+    });
+
+    test("fails no such game", async function(){
+        try {
+            await Organization.getGameOrganization(-1);
+            fail();
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        };
+    });
+});
+
+//Update game
+describe("updateGame", function(){
+    test("works", async function(){
+        const res = await Organization.updateGame(testGameIds[0], {gameLocation: 'elsewhere', notes: 'not wow'});
+    expect(res).toEqual({
+                        gameId: testGameIds[0],
+                        seasonId: testSeasonIds[0],
+                        team1Id: testTeamIds[0],
+                        team2Id: testTeamIds[1],
+                        gameDate: '12/12/21',
+                        gameTime: '12:00 pm',
+                        gameLocation: 'elsewhere',
+                        team1Score: 21,
+                        team2Score: 22,
+                        notes: 'not wow',
+                        team1Name: 'testTeam1',
+                        team2Name: 'testTeam2'
+                    })
+    });
+
+    test("fails no such game", async function(){
+        try{
+            await Organization.updateGame(-1, {notes: 'more notes'});
+            fail();
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    })
+});

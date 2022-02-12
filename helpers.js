@@ -47,11 +47,11 @@ function sqlForObjectArray(dataArray) {
         const vals = Object.values(dataArray[i]);
         const dols = [];
         for (let j = 0; j < vals.length; j++) {
-            dols.push(`$${(i * 8) + (j + 1)}`);
+            dols.push(`$${(i * vals.length) + (j + 1)}`);
         };
         values = [...values, ...vals];
         dollars = dollars + (dollars ? ', ' : '') +
-            `(${dols.join(', ')}, $${(dataArray.length * 8) + 1})`;
+            `(${dols.join(', ')}, $${(dataArray.length * vals.length) + 1})`;
     };
     return {values, dollars};
 };

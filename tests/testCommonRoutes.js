@@ -6,6 +6,7 @@ const { createToken } = require("../helpers");
 const testOrgIds = [];
 const testTeamIds = [];
 const testSeasonIds = [];
+const testGameIds = [];
 
 async function commonBeforeAll() {
     await db.query("DELETE FROM organizations");
@@ -13,6 +14,7 @@ async function commonBeforeAll() {
     await db.query("DELETE FROM user_organizations");
     await db.query("DELETE FROM teams");
     await db.query("DELETE FROM seasons");
+    await db.query("DELETE FROM games");
 
     testOrgIds[0] = (await Organization.add('Org1')).orgId;
     testOrgIds[1] = (await Organization.add('Org2')).orgId;
@@ -24,6 +26,27 @@ async function commonBeforeAll() {
     const testTeams = await Organization.addTeams(['testTeam1', 'testTeam2'], testSeasonIds[0]);
     testTeamIds[0] = testTeams[0].teamId;
     testTeamIds[1] = testTeams[1].teamId;
+
+    const testGames = await Organization.addGames(testSeasonIds[0], [
+        {team1Id: testTeamIds[0],
+        team2Id: testTeamIds[1],
+        gameDate: '12/12/21',
+        gameTime: '12:00 pm',
+        gameLocation: 'testLocation',
+        team1Score: 21,
+        team2Score: 22,
+        notes: 'frightening'},
+        {team1Id: testTeamIds[1],
+        team2Id: testTeamIds[0],
+        gameDate: '',
+        gameTime: '',
+        gameLocation: '',
+        team1Score: null,
+        team2Score: null,
+        notes: ''}
+    ]);
+    testGameIds[0] = testGames[0].gameId;
+    testGameIds[1] = testGames[1].gameId;
 
     await User.create({
         email: "test1@test.com",
@@ -109,6 +132,7 @@ module.exports = {
     testOrgIds,
     testSeasonIds,
     testTeamIds,
+    testGameIds,
     bobToken,
     barbToken,
     bulbToken
