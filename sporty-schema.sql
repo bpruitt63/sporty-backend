@@ -28,7 +28,14 @@ CREATE TABLE seasons (
 CREATE TABLE teams (
     id SERIAL PRIMARY KEY,
     team_name TEXT NOT NULL,
-    season_id INTEGER REFERENCES seasons ON DELETE CASCADE
+    color TEXT,
+    org_id INTEGER REFERENCES organizations ON DELETE CASCADE
+);
+
+CREATE TABLE season_teams (
+    season_id INTEGER REFERENCES seasons ON DELETE CASCADE,
+    team_id INTEGER REFERENCES teams ON DELETE CASCADE,
+    PRIMARY KEY (season_id, team_id)
 );
 
 CREATE TABLE games (

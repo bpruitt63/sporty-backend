@@ -6,8 +6,29 @@
     "maxItems": 30,
     "uniqueItems": true,
     "items": {
-        "type": "string",
-        "minLength": 3,
-        "maxLength": 50
+        "type": "object",
+        "properties": {
+            "teamName": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 50
+            },
+            "color": {
+                "enum": ["black", 
+                        "white", 
+                        "gray",
+                        "red",
+                        "orange",
+                        "yellow",
+                        "blue",
+                        "green",
+                        "purple",
+                        ""]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "teamName"
+        ]
     }
 }

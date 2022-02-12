@@ -1,7 +1,6 @@
 const db = require("../db");
 const { NotFoundError, BadRequestError } = require("../expressError");
-const { sqlForVariableArraySize, 
-        sqlForObjectArray,
+const { sqlForObjectArray,
         sqlForPartialUpdate } = require("../helpers");
 
 class Organization {
@@ -87,17 +86,18 @@ class Organization {
 
 
     //Add teams to database
-    static async addTeams(valueArray, seasonId) {
+    static async addTeams(valueArray, orgId) {
 
-        const values = sqlForVariableArraySize(valueArray);
+        const {values, dollars} = sqlForObjectArray(valueArray);
 
         const result = await db.query(
-            `INSERT INTO teams (team_name, season_id)
-            VALUES ${values}
+            `INSERT INTO teams (team_name, color, org_id)
+            VALUES ${dollars}
             RETURNING id AS "teamId", 
                     team_name AS "teamName", 
-                    season_id AS "seasonId"`,
-            [...valueArray, seasonId]
+                    color,
+                    org_id AS "orgId"`,
+            [...values, orgId]
         );
 
         const teams = result.rows;
@@ -105,12 +105,32 @@ class Organization {
         return teams;
     };
 
+    //Add teams to season
+    static async seasonTeams(valueArray, seasonId) {
+
+        //const values = sqlForVariableArraySize(valueArray);
+        const {values, dollars} = sqlForObjectArray(valueArray);
+
+        const result = await db.query(
+            `INSERT INTO season_teams (team_id, season_id)
+            VALUES ${dollars}
+            RETURNING season_id AS "seasonId", 
+                    team_id AS "teamId"`,
+            [...values, seasonId]
+        );
+
+        const seasonTeams = result.rows;
+        if (!seasonTeams[0]) throw new NotFoundError("Organization not found");
+        return seasonTeams;
+    };
+
     //Get all teams from a season
     static async getTeams(seasonId) {
         const result = await db.query(
             `SELECT id AS "teamId",
                     team_name AS "teamName"
-            FROM teams
+            FROM season_teams
+            JOIN teams ON team_id = teams.id
             WHERE season_id = $1`,
             [seasonId]
         );
@@ -124,10 +144,13 @@ class Organization {
         const result = await db.query(
             `SELECT teams.id AS "teamId",
                     team_name AS "teamName",
+                    color,
                     season_id AS "seasonId",
-                    org_id AS "orgId"
-            FROM teams JOIN seasons ON 
-                season_id = seasons.id
+                    teams.org_id AS "orgId"
+            FROM teams JOIN season_teams ON
+            teams.id = team_id
+            JOIN seasons ON 
+                season_teams.season_id = seasons.id
             WHERE teams.id = $1`,
             [teamId]
         );
@@ -136,16 +159,18 @@ class Organization {
         return team;
     };
 
-    //Edit team name
-    static async updateTeam(teamId, name) {
+    //Edit team
+    static async updateTeam(teamId, data) {
         const result = await db.query(
             `UPDATE teams
-            SET team_name = $1
-            WHERE id = $2
+            SET team_name = $1,
+                color = $2
+            WHERE id = $3
             RETURNING id AS "teamId", 
-                    team_name AS "teamName", 
-                    season_id AS "seasonId"`,
-            [name, teamId]
+                    team_name AS "teamName",
+                    color,
+                    org_id AS "orgId"`,
+            [data.teamName, data.color, teamId]
         );
         const team = result.rows[0];
         if (!team) throw new NotFoundError("Team not found");
@@ -277,6 +302,48 @@ class Organization {
         return games;
     };
 
+    //Get all games in season or team
+    static async getGames(id) {
+
+        let query = 'season_id = $1'
+        if (id.teamId) query += ' AND (team_1_id = $2 OR team_2_id = $2)';
+        const values = id.teamId ? [id.seasonId, id.teamId] : [id.seasonId];
+
+        const result = await db.query(
+            `WITH game AS (
+                SELECT id AS "gameId",
+                        team_1_id AS "team1Id",
+                        team_2_id AS "team2Id",
+                        season_id AS "seasonId",
+                        game_date AS "gameDate",
+                        game_time AS "gameTime",
+                        game_location AS "gameLocation",
+                        team_1_score AS "team1Score",
+                        team_2_score AS "team2Score",
+                        notes
+                FROM games
+                WHERE ${query})
+            SELECT * FROM (
+                SELECT game.*, (
+                    SELECT team_name FROM teams
+                    WHERE game."team1Id" = id
+                ) AS "team1Name",
+                (
+                    SELECT color FROM teams
+                    WHERE game."team1Id" = id
+                ) AS "team1Color",
+                (
+                    SELECT team_name FROM teams
+                    WHERE game."team2Id" = id
+                ) AS "team2Name" FROM game
+            ) AS allInfo`,
+            values
+        );
+        const games = result.rows;
+        if (!games[0]) throw new NotFoundError("No games found");
+        return games;
+    };
+
     //Get game's organization
     static async getGameOrganization(gameId) {
         const result = await db.query(
@@ -326,6 +393,10 @@ class Organization {
                     WHERE updated."team1Id" = id
                 ) AS "team1Name",
                 (
+                    SELECT color FROM teams
+                    WHERE updated."team1Id" = id
+                ) AS "team1Color",
+                (
                     SELECT team_name FROM teams
                     WHERE updated."team2Id" = id
                 ) AS "team2Name" FROM updated
@@ -337,6 +408,18 @@ class Organization {
         if (!game) throw new NotFoundError(`Game not found`);
                             
         return game;
+    };
+
+    //Delete game
+    static async removeGame(gameId) {
+        const result = await db.query(
+            `DELETE FROM games
+            WHERE id = $1
+            RETURNING id`,
+            [gameId]
+        );
+        const game = result.rows[0];
+        if (!game) throw new NotFoundError("Game not found");
     };
 
 };

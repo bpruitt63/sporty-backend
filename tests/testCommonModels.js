@@ -14,6 +14,7 @@ async function commonBeforeAll() {
     await db.query("DELETE FROM user_organizations");
     await db.query("DELETE FROM teams");
     await db.query("DELETE FROM seasons");
+	await db.query("DELETE FROM season_teams");
     await db.query("DELETE FROM games");
 
     await db.query(`
@@ -66,12 +67,17 @@ async function commonBeforeAll() {
     testSeasonIds.splice(0, 0, ...resultsSeasons.rows.map(r => r.id));
 
     const resultsTeams = await db.query(`
-    INSERT INTO teams (team_name, season_id)
-    VALUES ('testTeam1', $1),
-            ('testTeam2', $1)
+    INSERT INTO teams (team_name, color, org_id)
+    VALUES ('testTeam1', 'red', $1),
+            ('testTeam2', 'black', $1)
     RETURNING id`,
-    [testSeasonIds[0]]);
+    [testOrgIds[0]]);
     testTeamIds.splice(0, 0, ...resultsTeams.rows.map(r => r.id));
+
+    await db.query(`
+    INSERT INTO season_teams (team_id, season_id)
+    VALUES ($1, $3), ($2, $3)`,
+    [testTeamIds[0], testTeamIds[1], testSeasonIds[0]]);
 
     const resultsGames = await db.query(`
     INSERT INTO games (team_1_id,

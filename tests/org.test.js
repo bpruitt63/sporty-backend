@@ -131,16 +131,21 @@ describe("remove", function(){
 //Add teams
 describe("addTeams", function(){
     test("works", async function(){
-        const teams = await Organization.addTeams(['test1', 'test2', 'test3'], testSeasonIds[0]);
+        const teams = await Organization.addTeams([{teamName: 'test1', color: 'red'}, 
+                                        {teamName: 'test2', color: 'black'},
+                                        {teamName: 'test3', color: ''}], testOrgIds[0]);
         expect(teams).toEqual([{teamId: expect.any(Number),
                                 teamName: 'test1',
-                                seasonId: testSeasonIds[0]},
+                                color: 'red',
+                                orgId: testOrgIds[0]},
                             {teamId: expect.any(Number),
                                 teamName: 'test2',
-                                seasonId: testSeasonIds[0]},
+                                color: 'black',
+                                orgId: testOrgIds[0]},
                             {teamId: expect.any(Number),
                                 teamName: 'test3',
-                                seasonId: testSeasonIds[0]}]);
+                                color: '',
+                                orgId: testOrgIds[0]}]);
     });
 
     test("fails no data", async function(){
@@ -150,6 +155,16 @@ describe("addTeams", function(){
         } catch (err) {
             expect(err instanceof BadRequestError).toBeTruthy();
         };
+    });
+});
+
+//Add teams to season
+describe("seasonTeams", function(){
+    test("works", async function(){
+        const teams = await Organization.seasonTeams([{teamId: testTeamIds[0]},
+                                                    {teamId: testTeamIds[1]}], testSeasonIds[1]);
+        expect(teams).toEqual([{seasonId: testSeasonIds[1], teamId: testTeamIds[0]},
+                                {seasonId: testSeasonIds[1], teamId: testTeamIds[1]}]);
     });
 });
 
@@ -179,6 +194,7 @@ describe("getTeam", function(){
         const team = await Organization.getTeam(testTeamIds[0]);
         expect(team).toEqual({teamId: testTeamIds[0],
                                 teamName: 'testTeam1',
+                                color: 'red',
                                 seasonId: testSeasonIds[0],
                                 orgId: testOrgIds[0]});
     });
@@ -196,15 +212,16 @@ describe("getTeam", function(){
 //Update team
 describe("updateTeam", function(){
     test("works", async function(){
-        const team = await Organization.updateTeam(testTeamIds[0], 'newName');
+        const team = await Organization.updateTeam(testTeamIds[0], {teamName: 'newName', color: 'orange'});
         expect(team).toEqual({teamId: testTeamIds[0],
                                 teamName: 'newName',
-                                seasonId: testSeasonIds[0]});
+                                color: 'orange',
+                                orgId: testOrgIds[0]});
     });
 
     test("fails no such team", async function(){
         try{
-            await Organization.updateTeam(-1, 'newName');
+            await Organization.updateTeam(-1, {teamName: 'newName', color: 'orange'});
             fail();
         } catch (err) {
             expect(err instanceof NotFoundError).toBeTruthy();
@@ -365,6 +382,86 @@ describe("addGames", function(){
     });
 });
 
+//Get games
+describe("getGames", function(){
+    test("works seasonId", async function(){
+        const res = await Organization.getGames({seasonId: testSeasonIds[0]});
+        expect(res).toEqual([{
+                            gameId: testGameIds[0],
+                            team1Id: testTeamIds[0],
+                            team2Id: testTeamIds[1],
+                            seasonId: testSeasonIds[0],
+                            gameDate: '12/12/21',
+                            gameTime: '12:00 pm',
+                            gameLocation: 'testLocation',
+                            team1Score: 21,
+                            team2Score: 22,
+                            notes: 'wow!',
+                            team1Name: 'testTeam1',
+                            team1Color: 'red',
+                            team2Name: 'testTeam2'
+                        },
+                        {
+                            gameId: testGameIds[1],
+                            team1Id: testTeamIds[1],
+                            team2Id: testTeamIds[0],
+                            seasonId: testSeasonIds[0],
+                            gameDate: '',
+                            gameTime: '',
+                            gameLocation: '',
+                            team1Score: null,
+                            team2Score: null,
+                            notes: '',
+                            team1Name: 'testTeam2',
+                            team1Color: 'black',
+                            team2Name: 'testTeam1'
+                        }])
+    });
+
+    test("works teamId", async function(){
+        const res = await Organization.getGames({seasonId: testSeasonIds[0], teamId: testTeamIds[0]});
+        expect(res).toEqual([{
+                            gameId: testGameIds[0],
+                            team1Id: testTeamIds[0],
+                            team2Id: testTeamIds[1],
+                            seasonId: testSeasonIds[0],
+                            gameDate: '12/12/21',
+                            gameTime: '12:00 pm',
+                            gameLocation: 'testLocation',
+                            team1Score: 21,
+                            team2Score: 22,
+                            notes: 'wow!',
+                            team1Name: 'testTeam1',
+                            team1Color: 'red',
+                            team2Name: 'testTeam2'
+                        },
+                        {
+                            gameId: testGameIds[1],
+                            team1Id: testTeamIds[1],
+                            team2Id: testTeamIds[0],
+                            seasonId: testSeasonIds[0],
+                            gameDate: '',
+                            gameTime: '',
+                            gameLocation: '',
+                            team1Score: null,
+                            team2Score: null,
+                            notes: '',
+                            team1Name: 'testTeam2',
+                            team1Color: 'black',
+                            team2Name: 'testTeam1'
+                        }])
+    });
+
+    test("fails no games", async function(){
+        try {
+            await Organization.getGames({teamId: -1});
+            fail();
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    })
+});
+
 //Get game organization
 describe("getGameOrganization", function(){
     test("works", async function(){
@@ -398,7 +495,8 @@ describe("updateGame", function(){
                         team2Score: 22,
                         notes: 'not wow',
                         team1Name: 'testTeam1',
-                        team2Name: 'testTeam2'
+                        team2Name: 'testTeam2',
+                        team1Color: 'red'
                     })
     });
 
@@ -410,4 +508,21 @@ describe("updateGame", function(){
             expect(err instanceof NotFoundError).toBeTruthy();
         }
     })
+});
+
+//Delete game
+describe("removeGame", function(){
+    test("works", async function(){
+        const res = await Organization.removeGame(testGameIds[0]);
+        expect(res).toEqual(undefined);
+    });
+
+    test("fails if no such game", async function(){
+        try{
+            await Organization.removeGame(-1);
+            fail();
+        } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        };
+    });
 });

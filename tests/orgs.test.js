@@ -129,21 +129,31 @@ describe("DELETE /organizations/:id", function(){
 
 //POST add teams
 describe("POST /organizations/:id/seasons/:seasonId/teams", function(){
-    test("works", async function(){
+    test("works team names", async function(){
         const resp = await request(app)
             .post(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/teams`)
-            .send({teams: ['test1', 'test2', 'test3']})
+            .send({teams: [{teamName: 'test1', color: 'red'},
+                            {teamName: 'test2', color: 'black'}]})
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.body).toEqual({teams: 
                                     [{teamId: expect.any(Number),
-                                        teamName: 'test1',
                                         seasonId: testSeasonIds[0]},
                                     {teamId: expect.any(Number),
-                                        teamName: 'test2',
-                                        seasonId: testSeasonIds[0]},
-                                    {teamId: expect.any(Number),
-                                        teamName: 'test3',
                                         seasonId: testSeasonIds[0]}]});
+    });
+
+    test("works team ids", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[1]}/teams`)
+            .send({teams: [{teamName: 'test1', color: 'red'},
+                            {teamName: 'test2', color: 'black'}], 
+                            teamIds: [{teamId: testTeamIds[0]}, {teamId: testTeamIds[1]}]})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({teams: 
+                                    [{teamId: testTeamIds[0],
+                                        seasonId: testSeasonIds[1]},
+                                    {teamId: testTeamIds[1],
+                                        seasonId: testSeasonIds[1]}]});
     });
 
     test("fails unauth", async function(){
@@ -172,7 +182,9 @@ describe("GET /organizations/:id/seasons/:seasonId/teams", function(){
                                     [{teamId: testTeamIds[0],
                                         teamName: 'testTeam1'},
                                     {teamId: testTeamIds[1],
-                                        teamName: 'testTeam2'}]})
+                                        teamName: 'testTeam2'},
+                                    {teamId: testTeamIds[2],
+                                        teamName: 'testTeam3'}]})
     });
 });
 
@@ -181,18 +193,19 @@ describe("PATCH /organizations/:id/seasons/:seasonId/teams/:teamId", function(){
     test("works", async function(){
         const resp = await request(app)
             .patch(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/teams/${testTeamIds[0]}`)
-            .send({team: 'newName'})
+            .send({team: {teamName: 'newName', color: 'orange'}})
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.body).toEqual({team: {
                                     teamId: testTeamIds[0],
                                     teamName: 'newName',
-                                    seasonId: testSeasonIds[0]}})
+                                    color: 'orange',
+                                    orgId: testOrgIds[0]}})
     });
 
     test("fails unauth", async function(){
         const resp = await request(app)
             .patch(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/teams/${testTeamIds[0]}`)
-            .send({team: 'newName'})
+            .send({team: {teamName: 'newName', color: 'orange'}})
             .set("authorization", `Bearer ${bulbToken}`);
         expect(resp.statusCode).toEqual(401);
     });
@@ -200,7 +213,7 @@ describe("PATCH /organizations/:id/seasons/:seasonId/teams/:teamId", function(){
     test("fails wrong organization", async function(){
         const resp = await request(app)
             .patch(`/organizations/${testOrgIds[1]}/seasons/${testSeasonIds[0]}/teams/${testTeamIds[0]}`)
-            .send({team: 'newName'})
+            .send({team: {teamName: 'newName', color: 'orange'}})
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.statusCode).toEqual(403);
     });
@@ -208,7 +221,7 @@ describe("PATCH /organizations/:id/seasons/:seasonId/teams/:teamId", function(){
     test("checks name length", async function(){
         const resp = await request(app)
             .patch(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/teams/${testTeamIds[0]}`)
-            .send({team: 'n'})
+            .send({team: {teamName: 'n', color: 'orange'}})
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.statusCode).toEqual(400);
     });
@@ -494,6 +507,95 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
     });
 });
 
+//GET get all games from season/team
+describe("GET /organizations/:id/seasons/:seasonId/games", function(){
+    test("works seasonId", async function(){
+        const resp = await request(app)
+            .get(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games`);
+        expect(resp.body).toEqual({games: [{
+                                gameId: testGameIds[0],
+                                team1Id: testTeamIds[0],
+                                team2Id: testTeamIds[1],
+                                seasonId: testSeasonIds[0],
+                                gameDate: '12/12/21',
+                                gameTime: '12:00 pm',
+                                gameLocation: 'testLocation',
+                                team1Score: 21,
+                                team2Score: 22,
+                                notes: 'frightening',
+                                team1Name: 'testTeam1',
+                                team1Color: 'red',
+                                team2Name: 'testTeam2'
+                            },
+                            {
+                                gameId: testGameIds[1],
+                                team1Id: testTeamIds[1],
+                                team2Id: testTeamIds[0],
+                                seasonId: testSeasonIds[0],
+                                gameDate: '',
+                                gameTime: '',
+                                gameLocation: '',
+                                team1Score: null,
+                                team2Score: null,
+                                notes: '',
+                                team1Name: 'testTeam2',
+                                team1Color: 'black',
+                                team2Name: 'testTeam1'
+                            },
+                            {
+                                gameId: testGameIds[2],
+                                team1Id: testTeamIds[1],
+                                team2Id: testTeamIds[2],
+                                seasonId: testSeasonIds[0],
+                                gameDate: '',
+                                gameTime: '',
+                                gameLocation: '',
+                                team1Score: null,
+                                team2Score: null,
+                                notes: '',
+                                team1Name: 'testTeam2',
+                                team1Color: 'black',
+                                team2Name: 'testTeam3'
+                            }]});
+    });
+
+    test("works gameId", async function(){
+        const resp = await request(app)
+            .get(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games`)
+            .send({teamId: testTeamIds[0]});
+        expect(resp.body).toEqual({games: [{
+                                gameId: testGameIds[0],
+                                team1Id: testTeamIds[0],
+                                team2Id: testTeamIds[1],
+                                seasonId: testSeasonIds[0],
+                                gameDate: '12/12/21',
+                                gameTime: '12:00 pm',
+                                gameLocation: 'testLocation',
+                                team1Score: 21,
+                                team2Score: 22,
+                                notes: 'frightening',
+                                team1Name: 'testTeam1',
+                                team1Color: 'red',
+                                team2Name: 'testTeam2'
+                            },
+                            {
+                                gameId: testGameIds[1],
+                                team1Id: testTeamIds[1],
+                                team2Id: testTeamIds[0],
+                                seasonId: testSeasonIds[0],
+                                gameDate: '',
+                                gameTime: '',
+                                gameLocation: '',
+                                team1Score: null,
+                                team2Score: null,
+                                notes: '',
+                                team1Name: 'testTeam2',
+                                team1Color: 'black',
+                                team2Name: 'testTeam1'
+                            }]});
+    });
+});
+
 //PATCH update game
 describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
     test("works", async function(){
@@ -521,7 +623,8 @@ describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
                                     team2Score: 44,
                                     notes: '',
                                     team1Name: 'testTeam2',
-                                    team2Name: 'testTeam1'
+                                    team2Name: 'testTeam1',
+                                    team1Color: 'black'
                                 }});
     });
 
@@ -553,6 +656,30 @@ describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
                 team2Score: 44,
                 notes: ''
             }})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.statusCode).toEqual(403);
+    });
+});
+
+//DELETE game
+describe("DELETE /organizations/:id/seasons/:seasonId/games/:gameId", function(){
+    test("works", async function(){
+        const resp = await request(app)
+            .delete(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games/${testGameIds[0]}`)
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({deleted: `${testGameIds[0]}`});
+    });
+
+    test("fails unauth", async function(){
+        const resp = await request(app)
+            .delete(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games/${testGameIds[0]}`)
+            .set("authorization", `Bearer ${barbToken}`);
+        expect(resp.statusCode).toEqual(401);
+    });
+
+    test("fails wrong organization", async function(){
+        const resp = await request(app)
+            .delete(`/organizations/${testOrgIds[1]}/seasons/${testSeasonIds[0]}/games/${testGameIds[0]}`)
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.statusCode).toEqual(403);
     });

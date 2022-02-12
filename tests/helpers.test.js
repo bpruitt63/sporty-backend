@@ -1,7 +1,6 @@
 const { createToken, 
     sqlForPartialUpdate, 
     formatUserInfo,
-    sqlForVariableArraySize,
     sqlForObjectArray } = require("../helpers");
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config");
@@ -119,19 +118,6 @@ describe("sqlForPartialUpdate", function () {
             setCols: "\"f1\"=$1, \"f2\"=$2",
             values: ["v1", "v2"],
         });
-    });
-});
-
-
-describe("sqlForVariableArraySize", function () {
-    test("works: 1 item", function () {
-        const result = sqlForVariableArraySize(['item']);
-        expect(result).toEqual('($1, $2)');
-    });
-  
-    test("works: multiple items", function () {
-        const result = sqlForVariableArraySize(['item1', 'item2', 'item3']);
-        expect(result).toEqual('($1, $4), ($2, $4), ($3, $4)');
     });
 });
 

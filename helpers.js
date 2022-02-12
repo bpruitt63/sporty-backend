@@ -29,16 +29,6 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     };
 };
 
-function sqlForVariableArraySize(dataArray) {
-    if (!dataArray[0]) throw new BadRequestError("No data");
-
-    const dollars = [];
-    for (let i = 1; i <= dataArray.length; i++) {
-        dollars.push(`($${i}, $${dataArray.length + 1})`);
-    };
-    return dollars.join(', ')
-};
-
 function sqlForObjectArray(dataArray) {
     if (dataArray.length === 0) throw new BadRequestError("No data");
     let dollars = '';
@@ -79,5 +69,4 @@ function formatUserInfo(userRows) {
 module.exports = { createToken, 
     sqlForPartialUpdate, 
     formatUserInfo,
-    sqlForVariableArraySize,
     sqlForObjectArray};

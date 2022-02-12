@@ -14,6 +14,7 @@ async function commonBeforeAll() {
     await db.query("DELETE FROM user_organizations");
     await db.query("DELETE FROM teams");
     await db.query("DELETE FROM seasons");
+    await db.query("DELETE FROM season_teams");
     await db.query("DELETE FROM games");
 
     testOrgIds[0] = (await Organization.add('Org1')).orgId;
@@ -23,9 +24,16 @@ async function commonBeforeAll() {
     testSeasonIds[0] = (await Organization.addSeason('testSeason1', testOrgIds[0])).seasonId;
     testSeasonIds[1] = (await Organization.addSeason('testSeason2', testOrgIds[0])).seasonId;
 
-    const testTeams = await Organization.addTeams(['testTeam1', 'testTeam2'], testSeasonIds[0]);
+    const testTeams = await Organization.addTeams([{teamName: 'testTeam1', color: 'red'}, 
+                                                    {teamName: 'testTeam2', color: 'black'},
+                                                    {teamName: 'testTeam3', color: ''}], testOrgIds[0]);
     testTeamIds[0] = testTeams[0].teamId;
     testTeamIds[1] = testTeams[1].teamId;
+    testTeamIds[2] = testTeams[2].teamId;
+
+    await Organization.seasonTeams([{teamId: testTeamIds[0]}, 
+                                    {teamId: testTeamIds[1]},
+                                    {teamId: testTeamIds[2]}], testSeasonIds[0])
 
     const testGames = await Organization.addGames(testSeasonIds[0], [
         {team1Id: testTeamIds[0],
@@ -43,10 +51,19 @@ async function commonBeforeAll() {
         gameLocation: '',
         team1Score: null,
         team2Score: null,
+        notes: ''},
+        {team1Id: testTeamIds[1],
+        team2Id: testTeamIds[2],
+        gameDate: '',
+        gameTime: '',
+        gameLocation: '',
+        team1Score: null,
+        team2Score: null,
         notes: ''}
     ]);
     testGameIds[0] = testGames[0].gameId;
     testGameIds[1] = testGames[1].gameId;
+    testGameIds[2] = testGames[2].gameId;
 
     await User.create({
         email: "test1@test.com",

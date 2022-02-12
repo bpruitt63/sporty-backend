@@ -76,7 +76,17 @@ router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(re
         };
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Season does not belong to this organization`);
-        const teams = await Organization.addTeams(req.body.teams, req.params.seasonId);
+        
+        let ids; 
+        if (req.body.teamIds) {
+            ids = req.body.teamIds;
+        } else {
+            const res = await Organization.addTeams(req.body.teams, req.params.id);
+            ids = res.map(r => ({teamId: r.teamId}));
+        };
+
+        const teams = await Organization.seasonTeams(ids, req.params.seasonId);
+                    
         return res.json({teams});
     } catch(err) {
         return next(err);
@@ -189,6 +199,17 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
     };
 });
 
+router.get('/:id/seasons/:seasonId/games', async function(req, res, next){
+    try {
+        const ids = req.body.teamId ? {teamId: req.body.teamId, seasonId: req.params.seasonId}
+                                    : {seasonId: req.params.seasonId};
+        const games = await Organization.getGames(ids);
+        return res.json({games});
+    } catch(err) {
+        return next(err);
+    };
+});
+
 router.patch('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async function(req, res, next){
     try {
         const checkId = (await Organization.getGameOrganization(req.params.gameId)).orgId;
@@ -202,6 +223,17 @@ router.patch('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async fu
 
         const game = await Organization.updateGame(req.params.gameId, req.body.game);
         return res.json({game});
+    } catch(err) {
+        return next(err);
+    };
+});
+
+router.delete('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async function(req, res, next){
+    try {
+        const checkId = (await Organization.getGameOrganization(req.params.gameId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and game don't match`);
+        await Organization.removeGame(req.params.gameId);
+        return res.json({deleted: req.params.gameId});
     } catch(err) {
         return next(err);
     };
