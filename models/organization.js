@@ -288,7 +288,7 @@ class Organization {
                         team_1_id AS "team1Id",
                         team_2_id AS "team2Id",
                         season_id AS "seasonId",
-                        game_date AS "gameDate",
+                        TO_CHAR(game_date, 'Dy MM/DD/YY') AS "gameDate",
                         game_time AS "gameTime",
                         game_location AS "gameLocation",
                         team_1_score AS "team1Score",
@@ -315,14 +315,15 @@ class Organization {
                         team_1_id AS "team1Id",
                         team_2_id AS "team2Id",
                         season_id AS "seasonId",
-                        game_date AS "gameDate",
+                        TO_CHAR(game_date, 'Dy MM/DD/YY') AS "gameDate",
                         game_time AS "gameTime",
                         game_location AS "gameLocation",
                         team_1_score AS "team1Score",
                         team_2_score AS "team2Score",
                         notes
                 FROM games
-                WHERE ${query})
+                WHERE ${query}
+                ORDER BY "gameDate", "gameTime")
             SELECT * FROM (
                 SELECT game.*, (
                     SELECT team_name FROM teams
@@ -381,7 +382,7 @@ class Organization {
                             team_1_id AS "team1Id",
                             team_2_id AS "team2Id",
                             season_id AS "seasonId",
-                            game_date AS "gameDate",
+                            TO_CHAR(game_date, 'Dy MM/DD/YY') AS "gameDate",
                             game_time AS "gameTime",
                             game_location AS "gameLocation",
                             team_1_score AS "team1Score",

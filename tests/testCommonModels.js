@@ -89,8 +89,8 @@ async function commonBeforeAll() {
                         team_2_score,
                         notes,
                         season_id)
-    VALUES ($1, $2, '12/12/21', '12:00 pm', 'testLocation', 21, 22, 'wow!', $3),
-            ($2, $1, '', '', '', null, null, '', $3)
+    VALUES ($1, $2, '2021-12-12', '12:00:00', 'testLocation', 21, 22, 'wow!', $3),
+            ($2, $1, null, null, '', null, null, '', $3)
     RETURNING id`,
     [testTeamIds[0], testTeamIds[1], testSeasonIds[0]]);
     testGameIds.splice(0, 0, ...resultsGames.rows.map(r => r.id));

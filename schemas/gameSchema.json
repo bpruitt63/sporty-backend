@@ -14,21 +14,21 @@
                 "type": "integer"
             },
             "gameDate" : {
-                "type": "string",
                 "oneOf": [
-                    { "minLength": 8,
-                        "maxLength": 8 },
-                    { "minLength": 0,
-                        "maxLength": 0 }
+                    { 
+                        "type": "string",
+                        "format": "date"
+                    },
+                    { "type": "null" }
                 ]
             },
             "gameTime" : {
-                "type": "string",
                 "oneOf": [
-                    { "minLength": 8,
-                        "maxLength": 8 },
-                    { "minLength": 0,
-                        "maxLength": 0 }
+                    { 
+                        "type": "string",
+                        "format": "time"
+                    },
+                    { "type": "null" }
                 ]
             },
             "gameLocation" : {
