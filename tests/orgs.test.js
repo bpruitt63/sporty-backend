@@ -525,7 +525,8 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 notes: 'frightening',
                                 team1Name: 'testTeam1',
                                 team1Color: 'red',
-                                team2Name: 'testTeam2'
+                                team2Name: 'testTeam2',
+                                team2Color: 'black'
                             },
                             {
                                 gameId: testGameIds[1],
@@ -540,7 +541,8 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 notes: '',
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
-                                team2Name: 'testTeam1'
+                                team2Name: 'testTeam1',
+                                team2Color: 'red'
                             },
                             {
                                 gameId: testGameIds[2],
@@ -555,7 +557,8 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 notes: '',
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
-                                team2Name: 'testTeam3'
+                                team2Name: 'testTeam3',
+                                team2Color: ''
                             }]});
     });
 
@@ -576,7 +579,8 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 notes: 'frightening',
                                 team1Name: 'testTeam1',
                                 team1Color: 'red',
-                                team2Name: 'testTeam2'
+                                team2Name: 'testTeam2',
+                                team2Color: 'black'
                             },
                             {
                                 gameId: testGameIds[1],
@@ -591,7 +595,8 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 notes: '',
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
-                                team2Name: 'testTeam1'
+                                team2Name: 'testTeam1',
+                                team2Color: 'red'
                             }]});
     });
 });
@@ -624,7 +629,8 @@ describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
                                     notes: '',
                                     team1Name: 'testTeam2',
                                     team2Name: 'testTeam1',
-                                    team1Color: 'black'
+                                    team1Color: 'black',
+                                    team2Color: 'red'
                                 }});
     });
 

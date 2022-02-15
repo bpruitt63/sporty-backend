@@ -336,7 +336,11 @@ class Organization {
                 (
                     SELECT team_name FROM teams
                     WHERE game."team2Id" = id
-                ) AS "team2Name" FROM game
+                ) AS "team2Name",
+                (
+                    SELECT color FROM teams
+                    WHERE game."team2Id" = id
+                ) AS "team2Color" FROM game
             ) AS allInfo`,
             values
         );
@@ -400,7 +404,11 @@ class Organization {
                 (
                     SELECT team_name FROM teams
                     WHERE updated."team2Id" = id
-                ) AS "team2Name" FROM updated
+                ) AS "team2Name",
+                (
+                    SELECT color FROM teams
+                    WHERE updated."team2Id" = id
+                ) AS "team2Color" FROM updated
             ) AS allInfo`
         
         const result = await db.query(querySql, [...values, gameId]);

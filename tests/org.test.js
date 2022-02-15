@@ -399,7 +399,8 @@ describe("getGames", function(){
                             notes: 'wow!',
                             team1Name: 'testTeam1',
                             team1Color: 'red',
-                            team2Name: 'testTeam2'
+                            team2Name: 'testTeam2',
+                            team2Color: 'black'
                         },
                         {
                             gameId: testGameIds[1],
@@ -414,7 +415,8 @@ describe("getGames", function(){
                             notes: '',
                             team1Name: 'testTeam2',
                             team1Color: 'black',
-                            team2Name: 'testTeam1'
+                            team2Name: 'testTeam1',
+                            team2Color: 'red'
                         }])
     });
 
@@ -433,7 +435,8 @@ describe("getGames", function(){
                             notes: 'wow!',
                             team1Name: 'testTeam1',
                             team1Color: 'red',
-                            team2Name: 'testTeam2'
+                            team2Name: 'testTeam2',
+                            team2Color: 'black'
                         },
                         {
                             gameId: testGameIds[1],
@@ -448,7 +451,8 @@ describe("getGames", function(){
                             notes: '',
                             team1Name: 'testTeam2',
                             team1Color: 'black',
-                            team2Name: 'testTeam1'
+                            team2Name: 'testTeam1',
+                            team2Color: 'red'
                         }])
     });
 
@@ -496,7 +500,8 @@ describe("updateGame", function(){
                         notes: 'not wow',
                         team1Name: 'testTeam1',
                         team2Name: 'testTeam2',
-                        team1Color: 'red'
+                        team1Color: 'red',
+                        team2Color: 'black'
                     })
     });
 
