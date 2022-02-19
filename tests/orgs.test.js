@@ -180,10 +180,13 @@ describe("GET /organizations/:id/seasons/:seasonId/teams", function(){
             .get(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/teams`);
         expect(resp.body).toEqual({teams:
                                     [{teamId: testTeamIds[0],
+                                        color: 'red',
                                         teamName: 'testTeam1'},
                                     {teamId: testTeamIds[1],
+                                        color: 'black',
                                         teamName: 'testTeam2'},
                                     {teamId: testTeamIds[2],
+                                        color: 'N/A',
                                         teamName: 'testTeam3'}]})
     });
 });
@@ -558,7 +561,7 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
                                 team2Name: 'testTeam3',
-                                team2Color: ''
+                                team2Color: 'N/A'
                             }]});
     });
 

@@ -108,7 +108,6 @@ class Organization {
     //Add teams to season
     static async seasonTeams(valueArray, seasonId) {
 
-        //const values = sqlForVariableArraySize(valueArray);
         const {values, dollars} = sqlForObjectArray(valueArray);
 
         const result = await db.query(
@@ -128,6 +127,7 @@ class Organization {
     static async getTeams(seasonId) {
         const result = await db.query(
             `SELECT id AS "teamId",
+                    color,
                     team_name AS "teamName"
             FROM season_teams
             JOIN teams ON team_id = teams.id

@@ -26,7 +26,7 @@ async function commonBeforeAll() {
 
     const testTeams = await Organization.addTeams([{teamName: 'testTeam1', color: 'red'}, 
                                                     {teamName: 'testTeam2', color: 'black'},
-                                                    {teamName: 'testTeam3', color: ''}], testOrgIds[0]);
+                                                    {teamName: 'testTeam3', color: 'N/A'}], testOrgIds[0]);
     testTeamIds[0] = testTeams[0].teamId;
     testTeamIds[1] = testTeams[1].teamId;
     testTeamIds[2] = testTeams[2].teamId;

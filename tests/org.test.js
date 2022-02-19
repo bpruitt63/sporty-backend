@@ -133,7 +133,7 @@ describe("addTeams", function(){
     test("works", async function(){
         const teams = await Organization.addTeams([{teamName: 'test1', color: 'red'}, 
                                         {teamName: 'test2', color: 'black'},
-                                        {teamName: 'test3', color: ''}], testOrgIds[0]);
+                                        {teamName: 'test3', color: 'N/A'}], testOrgIds[0]);
         expect(teams).toEqual([{teamId: expect.any(Number),
                                 teamName: 'test1',
                                 color: 'red',
@@ -144,7 +144,7 @@ describe("addTeams", function(){
                                 orgId: testOrgIds[0]},
                             {teamId: expect.any(Number),
                                 teamName: 'test3',
-                                color: '',
+                                color: 'N/A',
                                 orgId: testOrgIds[0]}]);
     });
 
@@ -173,8 +173,10 @@ describe("getTeams", function(){
     test("works", async function(){
         const teams = await Organization.getTeams(testSeasonIds[0]);
         expect(teams).toEqual([{teamId: testTeamIds[0],
+                                    color: 'red',
                                     teamName: 'testTeam1'},
                                 {teamId: testTeamIds[1],
+                                    color: 'black',
                                     teamName: 'testTeam2'}])
     });
 
