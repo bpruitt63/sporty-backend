@@ -114,12 +114,12 @@ describe("POST /create", function(){
                 superAdmin: false
             })
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({
+        expect(resp.body).toEqual({user: {
                 email: 'new@test.com',
                 firstName: 'New',
                 lastName: 'Name',
                 superAdmin: false
-        });
+        }});
     });
 
     test("works, create super admin", async function(){
@@ -133,12 +133,12 @@ describe("POST /create", function(){
                 superAdmin: true
             })
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({
+        expect(resp.body).toEqual({user: {
                 email: 'new@test.com',
                 firstName: 'New',
                 lastName: 'Name',
                 superAdmin: true
-        });
+        }});
     });
 
     test("fails dupe", async function(){
@@ -177,12 +177,12 @@ describe("PATCH /users/:email", function() {
                 firstName: "New"
             })
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({
+        expect(resp.body).toEqual({user: {
             email: "test3@test.com",
             firstName: "New",
             lastName: "Toasty",
             superAdmin: false
-        });
+        }});
     });
   
     test("works for same user", async function () {
@@ -192,12 +192,12 @@ describe("PATCH /users/:email", function() {
                 firstName: "New"
             })
             .set("authorization", `Bearer ${bulbToken}`);
-        expect(resp.body).toEqual({
+        expect(resp.body).toEqual({user: {
                 email: "test3@test.com",
                 firstName: "New",
                 lastName: "Toasty",
                 superAdmin: false
-        });
+        }});
     });
   
     test("unauth if not same user", async function () {
@@ -246,12 +246,12 @@ describe("PATCH /users/:email", function() {
                 pwd: "new-password",
             })
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({
+        expect(resp.body).toEqual({user: {
                 email: "test1@test.com",
                 firstName: "Bob",
                 lastName: "Testy",
                 superAdmin: true
-        });
+        }});
         const isSuccessful = await User.login("test1@test.com", "new-password");
         expect(isSuccessful).toBeTruthy();
     });
@@ -263,12 +263,12 @@ describe("PATCH /users/:email", function() {
                 superAdmin: true
             })
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({
+        expect(resp.body).toEqual({user: {
                 email: "test3@test.com",
                 firstName: "Bulb",
                 lastName: "Toasty",
                 superAdmin: true
-        });
+        }});
     });
 
     test("regular user can't update super admin", async function () {

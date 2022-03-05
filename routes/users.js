@@ -67,8 +67,7 @@ router.post('/create', ensureSuperAdmin, async function(req, res, next){
 
         const {email, pwd, firstName, lastName, superAdmin} = req.body;
         let user = await User.create({email, pwd, firstName, lastName, superAdmin});
-        //user = formatUserInfo(user);
-        return res.json(user);
+        return res.json({user});
     } catch(err) {
         return next(err);
     };
@@ -88,7 +87,7 @@ router.patch('/:email', ensureCorrectUserOrSuperAdmin, async function(req, res, 
             throw new UnauthorizedError("Only Super Admins can grant Super Admin permissions");
         };
         const user = await User.update(req.params.email, req.body);
-        return res.json(user);
+        return res.json({user});
     } catch(err) {
         return next(err);
     };
