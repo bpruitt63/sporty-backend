@@ -29,10 +29,15 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     };
 };
 
-function sqlForObjectArray(dataArray) {
-    if (dataArray.length === 0) throw new BadRequestError("No data");
+function sqlForObjectArray(dataArray, jsToSql) {
+    if (!dataArray[0]) throw new BadRequestError("No data");
     let dollars = '';
     let values = [];
+    let cols = [];
+    for (let col of Object.keys(dataArray[0])) {
+        cols.push(`${jsToSql[col] || col},`);
+    };
+    cols = cols.join(' ');
     for (let i = 0; i < dataArray.length; i++) {
         const vals = Object.values(dataArray[i]);
         const dols = [];
@@ -43,7 +48,7 @@ function sqlForObjectArray(dataArray) {
         dollars = dollars + (dollars ? ', ' : '') +
             `(${dols.join(', ')}, $${(dataArray.length * vals.length) + 1})`;
     };
-    return {values, dollars};
+    return {cols, values, dollars};
 };
 
 

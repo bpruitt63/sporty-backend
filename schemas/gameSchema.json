@@ -39,14 +39,16 @@
             "team1Score" : {
                 "oneOf": [
                     { "type": "integer",
-                        "minimum": 0 },
+                        "minimum": 0,
+                        "maximum": 999 },
                     { "type": "null" }
                 ]           
             },
             "team2Score" : {
                 "oneOf": [
                     { "type": "integer",
-                        "minimum": 0 },
+                        "minimum": 0,
+                        "maximum": 999 },
                     { "type": "null" }
                 ]  
             },

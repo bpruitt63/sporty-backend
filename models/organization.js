@@ -88,10 +88,12 @@ class Organization {
     //Add teams to database
     static async addTeams(valueArray, orgId) {
 
-        const {values, dollars} = sqlForObjectArray(valueArray);
+        const jsToSql = {teamName: 'team_name'};
+
+        const {cols, values, dollars} = sqlForObjectArray(valueArray, jsToSql);
 
         const result = await db.query(
-            `INSERT INTO teams (team_name, color, org_id)
+            `INSERT INTO teams (${cols} org_id)
             VALUES ${dollars}
             RETURNING id AS "teamId", 
                     team_name AS "teamName", 
@@ -108,13 +110,24 @@ class Organization {
     //Add teams to season
     static async seasonTeams(valueArray, seasonId) {
 
-        const {values, dollars} = sqlForObjectArray(valueArray);
+        const jsToSql = {teamId: 'team_id'};
+
+        const {cols, values, dollars} = sqlForObjectArray(valueArray, jsToSql);
 
         const result = await db.query(
-            `INSERT INTO season_teams (team_id, season_id)
-            VALUES ${dollars}
-            RETURNING season_id AS "seasonId", 
-                    team_id AS "teamId"`,
+            `WITH t AS (
+                INSERT INTO season_teams (${cols} season_id)
+                VALUES ${dollars}
+                RETURNING season_id AS "seasonId", 
+                        team_id AS "teamId")
+            SELECT t.*, (
+                    SELECT team_name FROM teams
+                    WHERE t."teamId" = id
+                ) AS "teamName",
+                (
+                    SELECT color FROM teams
+                    WHERE t."teamId" = id
+                ) AS "teamColor" FROM t`,
             [...values, seasonId]
         );
 
@@ -270,18 +283,19 @@ class Organization {
 
     static async addGames(seasonId, dataArray) {
 
-        const {values, dollars} = sqlForObjectArray(dataArray)
+        const jsToSql = {team1Id: 'team_1_id',
+                        team2Id: 'team_2_id',
+                        gameDate: 'game_date',
+                        gameTime: 'game_time',
+                        gameLocation: 'game_location',
+                        team1Score: 'team_1_score',
+                        team2Score: 'team_2_score'};
+
+        const {cols, values, dollars} = sqlForObjectArray(dataArray, jsToSql)
 
         const result = await db.query(
             `INSERT INTO games (
-                        team_1_id,
-                        team_2_id,
-                        game_date,
-                        game_time,
-                        game_location,
-                        team_1_score,
-                        team_2_score,
-                        notes,
+                        ${cols}
                         season_id)
             VALUES ${dollars}
             RETURNING id AS "gameId",
@@ -315,8 +329,10 @@ class Organization {
                         team_1_id AS "team1Id",
                         team_2_id AS "team2Id",
                         season_id AS "seasonId",
-                        TO_CHAR(game_date, 'Dy MM/DD/YY') AS "gameDate",
+                        TO_CHAR(game_date, 'YYYY-MM-DD') AS "gameDate",
+                        TO_CHAR(game_date, 'Dy MM/DD/YY') AS "readableDate",
                         game_time AS "gameTime",
+                        TO_CHAR(game_time, 'HH12:MI AM') AS "readableTime",
                         game_location AS "gameLocation",
                         team_1_score AS "team1Score",
                         team_2_score AS "team2Score",
@@ -326,20 +342,24 @@ class Organization {
                 ORDER BY "gameDate", "gameTime")
             SELECT * FROM (
                 SELECT game.*, (
+                    SELECT title FROM seasons
+                    WHERE game."seasonId" = seasons.id
+                ) as title,
+                (
                     SELECT team_name FROM teams
-                    WHERE game."team1Id" = id
+                    WHERE game."team1Id" = teams.id
                 ) AS "team1Name",
                 (
                     SELECT color FROM teams
-                    WHERE game."team1Id" = id
+                    WHERE game."team1Id" = teams.id
                 ) AS "team1Color",
                 (
                     SELECT team_name FROM teams
-                    WHERE game."team2Id" = id
+                    WHERE game."team2Id" = teams.id
                 ) AS "team2Name",
                 (
                     SELECT color FROM teams
-                    WHERE game."team2Id" = id
+                    WHERE game."team2Id" = teams.id
                 ) AS "team2Color" FROM game
             ) AS allInfo`,
             values
@@ -386,8 +406,10 @@ class Organization {
                             team_1_id AS "team1Id",
                             team_2_id AS "team2Id",
                             season_id AS "seasonId",
-                            TO_CHAR(game_date, 'Dy MM/DD/YY') AS "gameDate",
+                            TO_CHAR(game_date, 'YYYY-MM-DD') AS "gameDate",
+                            TO_CHAR(game_date, 'Dy MM/DD/YY') AS "readableDate",
                             game_time AS "gameTime",
+                            TO_CHAR(game_time, 'HH12:MI AM') AS "readableTime",
                             game_location AS "gameLocation",
                             team_1_score AS "team1Score",
                             team_2_score AS "team2Score",

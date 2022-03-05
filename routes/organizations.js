@@ -153,6 +153,15 @@ router.get('/:id/seasons', async function(req, res, next){
     };
 });
 
+router.get('/:id/seasons/:seasonId', async function(req, res, next){
+    try {
+        const season = await Organization.getSeason(req.params.seasonId);
+        return res.json({season});
+    } catch(err) {
+        return next(err);
+    };
+});
+
 router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, seasonNameSchema);

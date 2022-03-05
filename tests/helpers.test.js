@@ -143,8 +143,17 @@ describe("sqlForObjectArray", function(){
                         'team1Score': 55,
                         'team2Score': 77,
                         'notes': 'not a test'
-        }]);
+                    }], {
+                        team1Id: 'team_1_id',
+                        team2Id: 'team_2_id',
+                        gameDate: 'game_date',
+                        gameTime: 'game_time',
+                        gameLocation: 'game_location',
+                        team1Score: 'team_1_score',
+                        team2Score: 'team_2_score'
+        });
         expect(result).toEqual({
+            cols: 'team_1_id, team_2_id, game_date, game_time, game_location, team_1_score, team_2_score, notes,',
             dollars: `($1, $2, $3, $4, $5, $6, $7, $8, $17), ($9, $10, $11, $12, $13, $14, $15, $16, $17)`,
             values: [1, 2, '12/2/21', '1:00pm', 'testLocation', 42,
                     21, 'what a test', 2, 3, '12/3/21', '2:00pm',
@@ -171,8 +180,17 @@ describe("sqlForObjectArray", function(){
                         'team1Score': '',
                         'team2Score': '',
                         'notes': ''
-        }]);
+                    }], {
+                        team1Id: 'team_1_id',
+                        team2Id: 'team_2_id',
+                        gameDate: 'game_date',
+                        gameTime: 'game_time',
+                        gameLocation: 'game_location',
+                        team1Score: 'team_1_score',
+                        team2Score: 'team_2_score'
+        });
         expect(result).toEqual({
+            cols: 'team_1_id, team_2_id, game_date, game_time, game_location, team_1_score, team_2_score, notes,',
             dollars: `($1, $2, $3, $4, $5, $6, $7, $8, $17), ($9, $10, $11, $12, $13, $14, $15, $16, $17)`,
             values: [1, 2, '', '', '', '',
                     '', '', 2, 3, '', '',

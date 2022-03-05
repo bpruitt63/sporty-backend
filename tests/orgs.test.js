@@ -137,23 +137,31 @@ describe("POST /organizations/:id/seasons/:seasonId/teams", function(){
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.body).toEqual({teams: 
                                     [{teamId: expect.any(Number),
-                                        seasonId: testSeasonIds[0]},
+                                        seasonId: testSeasonIds[0],
+                                        teamName: 'test1',
+                                        teamColor: 'red'},
                                     {teamId: expect.any(Number),
-                                        seasonId: testSeasonIds[0]}]});
+                                        seasonId: testSeasonIds[0],
+                                        teamName: 'test2',
+                                        teamColor: 'black'}]});
     });
 
     test("works team ids", async function(){
         const resp = await request(app)
             .post(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[1]}/teams`)
-            .send({teams: [{teamName: 'test1', color: 'red'},
-                            {teamName: 'test2', color: 'black'}], 
+            .send({teams: [{teamName: 'test1', color: 'orange'},
+                            {teamName: 'test2', color: 'orange'}], 
                             teamIds: [{teamId: testTeamIds[0]}, {teamId: testTeamIds[1]}]})
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.body).toEqual({teams: 
                                     [{teamId: testTeamIds[0],
-                                        seasonId: testSeasonIds[1]},
+                                        seasonId: testSeasonIds[1],
+                                        teamName: 'testTeam1',
+                                        teamColor: 'red'},
                                     {teamId: testTeamIds[1],
-                                        seasonId: testSeasonIds[1]}]});
+                                        seasonId: testSeasonIds[1],
+                                        teamName: 'testTeam2',
+                                        teamColor: 'black'}]});
     });
 
     test("fails unauth", async function(){
@@ -520,8 +528,11 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Id: testTeamIds[0],
                                 team2Id: testTeamIds[1],
                                 seasonId: testSeasonIds[0],
-                                gameDate: 'Sun 12/12/21',
+                                title: 'testSeason1',
+                                readableDate: 'Sun 12/12/21',
+                                gameDate: '2021-12-12',
                                 gameTime: '12:00:00',
+                                readableTime: '12:00 PM',
                                 gameLocation: 'testLocation',
                                 team1Score: 21,
                                 team2Score: 22,
@@ -536,8 +547,11 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Id: testTeamIds[1],
                                 team2Id: testTeamIds[0],
                                 seasonId: testSeasonIds[0],
+                                title: 'testSeason1',
+                                readableDate: null,
                                 gameDate: null,
                                 gameTime: null,
+                                readableTime: null,
                                 gameLocation: '',
                                 team1Score: null,
                                 team2Score: null,
@@ -552,8 +566,11 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Id: testTeamIds[1],
                                 team2Id: testTeamIds[2],
                                 seasonId: testSeasonIds[0],
+                                title: 'testSeason1',
+                                readableDate: null,
                                 gameDate: null,
                                 gameTime: null,
+                                readableTime: null,
                                 gameLocation: '',
                                 team1Score: null,
                                 team2Score: null,
@@ -565,7 +582,7 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                             }]});
     });
 
-    test("works gameId", async function(){
+    test("works teamId", async function(){
         const resp = await request(app)
             .get(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games`)
             .send({teamId: testTeamIds[0]});
@@ -574,8 +591,11 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Id: testTeamIds[0],
                                 team2Id: testTeamIds[1],
                                 seasonId: testSeasonIds[0],
-                                gameDate: 'Sun 12/12/21',
+                                title: 'testSeason1',
+                                gameDate: '2021-12-12',
+                                readableDate: 'Sun 12/12/21',
                                 gameTime: '12:00:00',
+                                readableTime: '12:00 PM',
                                 gameLocation: 'testLocation',
                                 team1Score: 21,
                                 team2Score: 22,
@@ -590,8 +610,11 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Id: testTeamIds[1],
                                 team2Id: testTeamIds[0],
                                 seasonId: testSeasonIds[0],
+                                title: 'testSeason1',
+                                readableDate: null,
                                 gameDate: null,
                                 gameTime: null,
+                                readableTime: null,
                                 gameLocation: '',
                                 team1Score: null,
                                 team2Score: null,
@@ -624,8 +647,10 @@ describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
                                     seasonId: testSeasonIds[0],
                                     team1Id: testTeamIds[1],
                                     team2Id: testTeamIds[0],
-                                    gameDate: 'Mon 12/05/22',
+                                    gameDate: '2022-12-05',
+                                    readableDate: 'Mon 12/05/22',
                                     gameTime: '12:00:00',
+                                    readableTime: '12:00 PM',
                                     gameLocation: 'testLocation',
                                     team1Score: 22,
                                     team2Score: 44,
