@@ -293,23 +293,43 @@ class Organization {
 
         const {cols, values, dollars} = sqlForObjectArray(dataArray, jsToSql)
 
-        const result = await db.query(
-            `INSERT INTO games (
-                        ${cols}
-                        season_id)
-            VALUES ${dollars}
-            RETURNING id AS "gameId",
-                        team_1_id AS "team1Id",
-                        team_2_id AS "team2Id",
-                        season_id AS "seasonId",
-                        TO_CHAR(game_date, 'Dy MM/DD/YY') AS "gameDate",
-                        game_time AS "gameTime",
-                        game_location AS "gameLocation",
-                        team_1_score AS "team1Score",
-                        team_2_score AS "team2Score",
-                        notes`,
-            [...values, seasonId]
-        );
+        const querySql = `WITH games AS (
+                INSERT INTO games (
+                            ${cols}
+                            season_id)
+                VALUES ${dollars}
+                RETURNING id AS "gameId",
+                            team_1_id AS "team1Id",
+                            team_2_id AS "team2Id",
+                            season_id AS "seasonId",
+                            TO_CHAR(game_date, 'YYYY-MM-DD') AS "gameDate",
+                            TO_CHAR(game_date, 'Dy MM/DD/YY') AS "readableDate",
+                            game_time AS "gameTime",
+                            TO_CHAR(game_time, 'HH12:MI AM') AS "readableTime",
+                            game_location AS "gameLocation",
+                            team_1_score AS "team1Score",
+                            team_2_score AS "team2Score",
+                            notes)
+            SELECT * FROM (
+                SELECT games.*, (
+                    SELECT team_name FROM teams
+                    WHERE games."team1Id" = id
+                ) AS "team1Name",
+                (
+                    SELECT color FROM teams
+                    WHERE games."team1Id" = id
+                ) AS "team1Color",
+                (
+                    SELECT team_name FROM teams
+                    WHERE games."team2Id" = id
+                ) AS "team2Name",
+                (
+                    SELECT color FROM teams
+                    WHERE games."team2Id" = id
+                ) AS "team2Color" FROM games
+            ) AS allInfo`
+        
+        const result = await db.query(querySql, [...values, seasonId]);
 
         const games = result.rows;
         if (!games[0]) throw new BadRequestError('Games not added');
