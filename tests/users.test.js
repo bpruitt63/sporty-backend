@@ -182,7 +182,8 @@ describe("PATCH /users/:email", function() {
             firstName: "New",
             lastName: "Toasty",
             superAdmin: false
-        }});
+        },
+        token: ''});
     });
   
     test("works for same user", async function () {
@@ -196,8 +197,15 @@ describe("PATCH /users/:email", function() {
                 email: "test3@test.com",
                 firstName: "New",
                 lastName: "Toasty",
-                superAdmin: false
-        }});
+                superAdmin: false,
+                organizations: {
+                    null: {
+                        adminLevel: null,
+                        orgName: null
+                    }
+                }
+        },
+        token: expect.any(String)});
     });
   
     test("unauth if not same user", async function () {
@@ -250,8 +258,15 @@ describe("PATCH /users/:email", function() {
                 email: "test1@test.com",
                 firstName: "Bob",
                 lastName: "Testy",
-                superAdmin: true
-        }});
+                superAdmin: true,
+                organizations: {
+                    [testOrgIds[0]]: {
+                        adminLevel: 3,
+                        orgName: 'Org1'
+                    }
+                }
+        },
+        token: expect.any(String)});
         const isSuccessful = await User.login("test1@test.com", "new-password");
         expect(isSuccessful).toBeTruthy();
     });
@@ -268,7 +283,8 @@ describe("PATCH /users/:email", function() {
                 firstName: "Bulb",
                 lastName: "Toasty",
                 superAdmin: true
-        }});
+        },
+        token: ''});
     });
 
     test("regular user can't update super admin", async function () {

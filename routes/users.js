@@ -47,7 +47,7 @@ router.post('/register', async function(req, res, next){
         const {email, pwd, firstName, lastName} = req.body;
         const superAdmin = false;
         let user = await User.create({email, pwd, firstName, lastName, superAdmin});
-        //user = formatUserInfo(user);
+
         const token = createToken(user);
 
         return res.json({token});
@@ -82,12 +82,21 @@ router.patch('/:email', ensureCorrectUserOrSuperAdmin, async function(req, res, 
             throw new BadRequestError(errs);
         };
 
-        if (req.body.email) delete req.body.email;
         if (req.body.superAdmin && !res.locals.user.superAdmin) {
             throw new UnauthorizedError("Only Super Admins can grant Super Admin permissions");
         };
-        const user = await User.update(req.params.email, req.body);
-        return res.json({user});
+        let user = await User.update(req.params.email, req.body);
+
+        let token = '';
+
+        //Update token if user is editing self
+        if (res.locals.user.email === req.params.email) {
+            user = await User.get(user.email);
+            user = formatUserInfo(user);
+            token = createToken(user);
+        };
+
+        return res.json({user, token});
     } catch(err) {
         return next(err);
     };
