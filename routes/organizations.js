@@ -5,6 +5,7 @@ const organizationNewSchema = require('../schemas/organizationNew.json');
 const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
 const gameSchema = require('../schemas/gameSchema.json');
+const { createToken } = require("../helpers");
 const { BadRequestError, ForbiddenError } = require("../expressError");
 const { ensureLoggedIn, 
     ensureLocalAdmin, 
@@ -61,7 +62,13 @@ router.patch('/:id', ensureLocalAdmin, async function(req, res, next){
 router.delete('/:id', ensureLocalAdmin, async function(req, res, next){
     try {
         await Organization.remove(req.params.id);
-        return res.json({deleted: req.params.id});
+        let user = res.locals.user;
+        let token;
+        if (req.params.id in user.organizations) {
+            delete user.organizations[req.params.id];
+            token = createToken(user);
+        };
+        return res.json({deleted: req.params.id, token});
     } catch(err) {
         return next(err);
     };

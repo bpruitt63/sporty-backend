@@ -116,7 +116,8 @@ describe("DELETE /organizations/:id", function(){
         const resp = await request(app)
             .delete(`/organizations/${testOrgIds[0]}`)
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({deleted: `${testOrgIds[0]}`});
+        expect(resp.body).toEqual({deleted: `${testOrgIds[0]}`,
+                                    token: undefined});
     });
 
     test("fails unauth", async function(){
