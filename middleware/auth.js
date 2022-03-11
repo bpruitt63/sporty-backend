@@ -39,7 +39,7 @@ function ensureLocalAdmin(req, res, next) {
     try {
         const user = res.locals.user;
         const org = req.params.id;
-        if (!(user && (user.superAdmin || (user.organizations[org] && user.organizations[org].adminLevel === '1')))) {
+        if (!(user && (user.superAdmin || (user.organizations[org] && user.organizations[org].adminLevel === 1)))) {
             throw new UnauthorizedError();
         };
         return next();
@@ -78,7 +78,7 @@ function ensureCorrectUserOrLocalAdmin(req, res, next) {
         const user = res.locals.user;
         const org = req.body ? req.body.orgId : null;
         if (!(user && (user.superAdmin || user.email === req.params.email || 
-                    (user.organizations[org] && user.organizations[org].adminLevel === '1')))) {
+                    (user.organizations[org] && user.organizations[org].adminLevel === 1)))) {
             throw new UnauthorizedError();
         };
         return next();

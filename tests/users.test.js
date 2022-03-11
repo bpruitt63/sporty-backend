@@ -183,7 +183,7 @@ describe("PATCH /users/:email", function() {
             lastName: "Toasty",
             superAdmin: false
         },
-        token: ''});
+        token: undefined});
     });
   
     test("works for same user", async function () {
@@ -284,7 +284,7 @@ describe("PATCH /users/:email", function() {
                 lastName: "Toasty",
                 superAdmin: true
         },
-        token: ''});
+        token: undefined});
     });
 
     test("regular user can't update super admin", async function () {
@@ -390,28 +390,52 @@ describe("GET /org/:id", function() {
 });
 
 describe("POST, /org:id/:email", function(){
-    test("works", async function(){
+    test("works, admin can create admin", async function(){
         const resp = await request(app)
             .post(`/users/org${testOrgIds[0]}/test3@test.com`)
             .send({adminLevel: 1})
             .set("authorization", `Bearer ${bobToken}`);
-        expect(resp.body).toEqual({userOrg: {
+        expect(resp.body).toEqual({user: {
                 email: 'test3@test.com',
-                orgId: testOrgIds[0],
-                adminLevel: 1
-        }});
+                superAdmin: false,
+                firstName: 'Bulb',
+                lastName: 'Toasty',
+                organizations: {
+                    [testOrgIds[0]] : {
+                        adminLevel: 1,
+                        orgName: 'Org1'
+                    }
+                }
+            },
+            token: undefined});
+    });
+
+    test("works, organization's first user is admin", async function(){
+        const resp = await request(app)
+            .post(`/users/org${testOrgIds[2]}/test3@test.com`)
+            .send({adminLevel: 1})
+            .set("authorization", `Bearer ${bulbToken}`);
+        expect(resp.body).toEqual({user: {
+                email: 'test3@test.com',
+                superAdmin: false,
+                firstName: 'Bulb',
+                lastName: 'Toasty',
+                organizations: {
+                    [testOrgIds[2]] : {
+                        adminLevel: 1,
+                        orgName: 'Org3'
+                    }
+                }
+            },
+            token: expect.any(String)});
     });
 
     test("non admin can't give admin level", async function(){
         const resp = await request(app)
-            .post(`/users/org${testOrgIds[0]}/test3@test.com`)
+            .post(`/users/org${testOrgIds[0]}/test2@test.com`)
             .send({adminLevel: 1})
             .set("authorization", `Bearer ${bulbToken}`);
-        expect(resp.body).toEqual({userOrg: {
-                email: 'test3@test.com',
-                orgId: testOrgIds[0],
-                adminLevel: 3
-        }});
+        expect(resp.statusCode).toEqual(401);
     });
 });
 

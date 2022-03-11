@@ -19,7 +19,7 @@ const testPayload = {email: 'test@test.com',
                     organizations: {
                         1: {
                             orgName: 'Org1',
-                            adminLevel: '3'
+                            adminLevel: 3
                         }
                     }};
 const testJwt = jwt.sign(testPayload, SECRET_KEY);
@@ -43,7 +43,7 @@ describe("authenticateJWT", function () {
             organizations: {
                 1: {
                     orgName: 'Org1',
-                    adminLevel: '3'
+                    adminLevel: 3
                 }
             }});
     });
@@ -113,7 +113,7 @@ describe("ensureSuperAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     }
                                 }}}};
         const next = function (err) {
@@ -132,7 +132,7 @@ describe("ensureSuperAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     }
                                 }}}};
         const next = function (err) {
@@ -163,7 +163,7 @@ describe("ensureLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     }
                                 }}}};
         const next = function (err) {
@@ -182,7 +182,7 @@ describe("ensureLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -201,11 +201,11 @@ describe("ensureLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '2'
+                                        adminLevel: 2
                                     },
                                     2: {
                                         orgName: 'Org2',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -224,7 +224,7 @@ describe("ensureLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -255,7 +255,7 @@ describe("ensureLocalEditor", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     }
                                 }}}};
         const next = function (err) {
@@ -274,7 +274,7 @@ describe("ensureLocalEditor", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -293,7 +293,7 @@ describe("ensureLocalEditor", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '2'
+                                        adminLevel: 2
                                     }
                                 }}}};
         const next = function (err) {
@@ -312,11 +312,11 @@ describe("ensureLocalEditor", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     },
                                     2: {
                                         orgName: 'Org2',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -335,7 +335,7 @@ describe("ensureLocalEditor", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -366,7 +366,7 @@ describe("ensureCorrectUserOrSuperAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     }
                                 }}}};
         const next = function (err) {
@@ -385,7 +385,7 @@ describe("ensureCorrectUserOrSuperAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -408,7 +408,7 @@ describe("ensureCorrectUserOrSuperAdmin", function () {
                                     },
                                     2: {
                                         orgName: 'Org2',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -439,7 +439,7 @@ describe("ensureCorrectUserOrLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '3'
+                                        adminLevel: 3
                                     }
                                 }}}};
         const next = function (err) {
@@ -458,7 +458,7 @@ describe("ensureCorrectUserOrLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -477,7 +477,7 @@ describe("ensureCorrectUserOrLocalAdmin", function () {
                                 organizations: {
                                     1: {
                                         orgName: 'Org1',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {
@@ -500,7 +500,7 @@ describe("ensureCorrectUserOrLocalAdmin", function () {
                                     },
                                     2: {
                                         orgName: 'Org2',
-                                        adminLevel: '1'
+                                        adminLevel: 1
                                     }
                                 }}}};
         const next = function (err) {

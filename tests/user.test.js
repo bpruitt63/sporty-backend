@@ -195,11 +195,15 @@ describe("add user organization", function(){
     test("works", async function(){
         const userOrg = await User.addUserOrganization('test3@test.com',
                         testOrgIds[2], 2);
-        expect(userOrg).toEqual({
+        expect(userOrg).toEqual([{
                         email: 'test3@test.com',
                         orgId: testOrgIds[2],
-                        adminLevel: 2
-        });
+                        firstName: 'Bulb',
+                        lastName: 'Toasty',
+                        adminLevel: 2,
+                        superAdmin: false,
+                        orgName: 'Org3'
+        }]);
     });
 });
 
@@ -208,11 +212,15 @@ describe("remove user organization", function(){
     test("works", async function(){
         const userOrg = await User.addUserOrganization('test3@test.com',
                         testOrgIds[2], 2);
-        expect(userOrg).toEqual({
+        expect(userOrg).toEqual([{
                         email: 'test3@test.com',
                         orgId: testOrgIds[2],
-                        adminLevel: 2
-        });
+                        firstName: 'Bulb',
+                        lastName: 'Toasty',
+                        adminLevel: 2,
+                        superAdmin: false,
+                        orgName: 'Org3'
+}]);
         const removed = await User.removeUserOrganization('test3@test.com',
                         testOrgIds[2]);
         expect(removed).toEqual({

@@ -81,13 +81,12 @@ router.patch('/:email', ensureCorrectUserOrSuperAdmin, async function(req, res, 
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
-
         if (req.body.superAdmin && !res.locals.user.superAdmin) {
             throw new UnauthorizedError("Only Super Admins can grant Super Admin permissions");
         };
         let user = await User.update(req.params.email, req.body);
 
-        let token = '';
+        let token;
 
         //Update token if user is editing self
         if (res.locals.user.email === req.params.email) {
@@ -95,7 +94,6 @@ router.patch('/:email', ensureCorrectUserOrSuperAdmin, async function(req, res, 
             user = formatUserInfo(user);
             token = createToken(user);
         };
-
         return res.json({user, token});
     } catch(err) {
         return next(err);
@@ -129,20 +127,33 @@ router.get('/org/:id', ensureLocalAdmin, async function(req, res, next){
 //Add user organization
 router.post('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(req, res, next){
     try {
-        const user = res.locals.user;
-        if (req.body.adminLevel && !(user.superAdmin || (user.organizations[req.params.id] &&
-                user.organizations[req.params.id].adminLevel === 1))){
-            delete req.body.adminLevel;
-        } else {
-            const validator = jsonschema.validate(req.body, adminUpdateSchema);
-            if (!validator.valid) {
-                const errs = validator.errors.map(e => e.stack);
-                throw new BadRequestError(errs);
+        const u = res.locals.user;
+        if (req.body.adminLevel && u.email !== req.params.email &&
+                    !(u.superAdmin || (u.organizations[req.params.id] &&
+                    u.organizations[req.params.id].adminLevel === 1))) {
+                const orgUsers = await User.getAll(req.params.id);
+                if (orgUsers) {
+                    delete req.body.adminLevel;
+                };
             };
+        const validator = jsonschema.validate(req.body, adminUpdateSchema);
+        if (!validator.valid) {
+            const errs = validator.errors.map(e => e.stack);
+            throw new BadRequestError(errs);
         };
-        const userOrg = await User.addUserOrganization(req.params.email,
+        let user = await User.addUserOrganization(req.params.email,
                                         req.params.id, req.body.adminLevel || 3);
-        return res.json({userOrg});
+        user = formatUserInfo(user);
+        let token;
+
+        if (u.email === user.email) {
+            if (!(null in u.organizations)) {
+                user.organizations = {...u.organizations, ...user.organizations};
+            };
+            token = createToken(user);
+        };
+        
+        return res.json({user, token});
     } catch(err) {
         return next(err);
     };

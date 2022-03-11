@@ -135,14 +135,33 @@ class User {
 
     //Add organization to a user
     static async addUserOrganization(email, orgId, adminLevel) {
+
         const result = await db.query(
-            `INSERT INTO user_organizations
-                    (email, org_id, admin_level)
-            VALUES ($1, $2, $3)
-            RETURNING email, org_id AS "orgId", admin_level AS "adminLevel"`,
-            [email, orgId, adminLevel]
+            `WITH u AS (
+                INSERT INTO user_organizations
+                        (email, org_id, admin_level)
+                VALUES ($1, $2, $3)
+                RETURNING email, org_id AS "orgId", admin_level AS "adminLevel")
+            SELECT u.*, (
+                SELECT first_name FROM users
+                WHERE u.email = email
+            ) AS "firstName",
+            (
+                SELECT last_name FROM users
+                WHERE u.email = email
+            ) AS "lastName",
+            (
+                SELECT super_admin FROM users
+                WHERE u.email = email
+            ) AS "superAdmin",
+            (
+                SELECT org_name FROM organizations
+                WHERE u."orgId" = organizations.id
+            ) AS "orgName" FROM u`,
+                [email, orgId, adminLevel]
         );
-        return result.rows[0];
+
+        return result.rows;
     };
 
     //Remove user from organization
