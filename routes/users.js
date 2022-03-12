@@ -14,7 +14,7 @@ const { ensureSuperAdmin,
 
 const router = new express.Router();
 
-//Route to validate and log in a registered user
+/** Route to validate and log in a registered user, returns token */
 router.post('/login', async function(req, res, next) {
     try {
         const validator = jsonschema.validate(req.body, loginSchema);
@@ -35,7 +35,7 @@ router.post('/login', async function(req, res, next) {
     };
 });
 
-//For new user registration
+/** For new user registration, returns token */
 router.post('/register', async function(req, res, next){
     try{
         const validator = jsonschema.validate(req.body, userNewSchema);
@@ -56,7 +56,9 @@ router.post('/register', async function(req, res, next){
     };
 });
 
-//For super admin to create new user
+/** For super admin to create new user
+ * Returns email, first and last name, super admin
+ */
 router.post('/create', ensureSuperAdmin, async function(req, res, next){
     try{
         const validator = jsonschema.validate(req.body, userNewSchema);
@@ -73,7 +75,9 @@ router.post('/create', ensureSuperAdmin, async function(req, res, next){
     };
 });
 
-//For user to update basic info or super admin to update all info
+/** For user to update basic info or super admin to update all info 
+ * Returns email, first and last name, super admin
+*/
 router.patch('/:email', ensureCorrectUserOrSuperAdmin, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, userUpdateSchema);
@@ -100,7 +104,9 @@ router.patch('/:email', ensureCorrectUserOrSuperAdmin, async function(req, res, 
     };
 });
 
-//Get single user info
+/** Get single user info
+ * Returns email, first and last name, super admin, organizations object
+ */
 router.get('/:email', ensureCorrectUserOrLocalAdmin, async function(req, res, next){
     try {
         let user = await User.get(req.params.email);
@@ -111,7 +117,9 @@ router.get('/:email', ensureCorrectUserOrLocalAdmin, async function(req, res, ne
     };
 });
 
-//Get all users from an organization
+/** Get all users from organization
+ * Returns email, first and last name, super admin, organizations object for each
+ */
 router.get('/org/:id', ensureLocalAdmin, async function(req, res, next){
     try {
         const users = await User.getAll(req.params.id);
@@ -124,10 +132,19 @@ router.get('/org/:id', ensureLocalAdmin, async function(req, res, next){
     };
 });
 
-//Add user organization
+/**Add user organization
+ * Returns user email, first and last name, super admin,
+ * organization id, name, admin level,
+ * updated token if user belongs to organization
+ */
 router.post('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(req, res, next){
     try {
         const u = res.locals.user;
+
+        /** Added user can only have organizational permissions if
+         * added by super admin, organizational admin, or
+         * if initially creating the organization themselves
+         */
         if (req.body.adminLevel && u.email !== req.params.email &&
                     !(u.superAdmin || (u.organizations[req.params.id] &&
                     u.organizations[req.params.id].adminLevel === 1))) {
@@ -135,7 +152,8 @@ router.post('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(req,
                 if (orgUsers) {
                     delete req.body.adminLevel;
                 };
-            };
+        };
+
         const validator = jsonschema.validate(req.body, adminUpdateSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
@@ -146,6 +164,9 @@ router.post('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(req,
         user = formatUserInfo(user);
         let token;
 
+        /** Adds organization to user if user is adding self to organization
+         * Updates token
+         */
         if (u.email === user.email) {
             if (!(null in u.organizations)) {
                 user.organizations = {...u.organizations, ...user.organizations};
@@ -159,7 +180,7 @@ router.post('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(req,
     };
 });
 
-//Remove user organization
+/** Remove user organization, returns email and organization id */
 router.delete('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(req, res, next){
     try {
         const userOrg = await User.removeUserOrganization(
@@ -170,7 +191,7 @@ router.delete('/org:id/:email', ensureCorrectUserOrLocalAdmin, async function(re
     };
 });
 
-//Update local admin level
+/** Update local admin level, returns email, organization id, admin level */
 router.patch('/org:id/:email', ensureLocalAdmin, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, adminUpdateSchema);

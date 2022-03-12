@@ -13,6 +13,10 @@ const { ensureLoggedIn,
 
 const router = new express.Router();
 
+
+/***************** Organization **********************/
+
+/** Returns organization name, id */
 router.get('/:id', async function(req, res, next){
     try {
         const org = await Organization.get(req.params.id);
@@ -22,6 +26,7 @@ router.get('/:id', async function(req, res, next){
     };
 });
 
+/** Fuzzy search of organization names, returns first 10 results */
 router.get('/search/:name', async function(req, res, next){
     try {
         const orgs = await Organization.search(req.params.name);
@@ -31,6 +36,7 @@ router.get('/search/:name', async function(req, res, next){
     };
 });
 
+/** Creates organization, returns name, id */
 router.post('/', ensureLoggedIn, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, organizationNewSchema);
@@ -45,6 +51,7 @@ router.post('/', ensureLoggedIn, async function(req, res, next){
     };
 });
 
+/** Updates organization, returns name, id */
 router.patch('/:id', ensureLocalAdmin, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, organizationNewSchema);
@@ -59,6 +66,7 @@ router.patch('/:id', ensureLocalAdmin, async function(req, res, next){
     };
 });
 
+/** Deletes organization, returns success message and updated token */
 router.delete('/:id', ensureLocalAdmin, async function(req, res, next){
     try {
         await Organization.remove(req.params.id);
@@ -74,6 +82,13 @@ router.delete('/:id', ensureLocalAdmin, async function(req, res, next){
     };
 });
 
+
+/*************************** Teams **********************/
+
+/** Adds teams to a season
+ * If teams do not already exist, adds them to organization first
+ * Returns season id, team id, team name, team color for each team
+ */
 router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body.teams, teamNameSchema);
@@ -81,9 +96,12 @@ router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(re
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
+
+        // Ensure correct organization for season
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Season does not belong to this organization`);
         
+        // Adds teams to organization if they do not already exist
         let ids; 
         if (req.body.teamIds) {
             ids = req.body.teamIds;
@@ -92,6 +110,7 @@ router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(re
             ids = res.map(r => ({teamId: r.teamId}));
         };
 
+        // Add teams to season
         const teams = await Organization.seasonTeams(ids, req.params.seasonId);
                     
         return res.json({teams});
@@ -100,6 +119,9 @@ router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(re
     };
 });
 
+/** Gets all teams from a season
+ * Returns id, color, name for each
+ */
 router.get('/:id/seasons/:seasonId/teams', async function(req, res, next){
     try {
         const teams = await Organization.getTeams(req.params.seasonId);
@@ -109,6 +131,9 @@ router.get('/:id/seasons/:seasonId/teams', async function(req, res, next){
     };
 });
 
+/** Update team name, color
+ * Returns name, color, id, organization id
+ */
 router.patch('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate([req.body.team], teamNameSchema);
@@ -116,8 +141,11 @@ router.patch('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async fu
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
+
+        // Ensure correct organization for team
         const checkId = (await Organization.getTeam(req.params.teamId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and team don't match`);
+        
         const team = await Organization.updateTeam(req.params.teamId, 
                                                     req.body.team);
         return res.json({team});
@@ -126,10 +154,14 @@ router.patch('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async fu
     };
 });
 
+/** Delete team */
 router.delete('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async function(req, res, next){
     try {
+
+        // Ensure correct organization for team
         const checkId = (await Organization.getTeam(req.params.teamId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and team don't match`);
+        
         await Organization.removeTeam(req.params.teamId);
         return res.json({deleted: req.params.teamId});
     } catch(err) {
@@ -137,6 +169,10 @@ router.delete('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async f
     };
 });
 
+
+/*************************** Seasons **************************/
+
+/** Create season, returns season id and title, organization id */
 router.post('/:id/seasons', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, seasonNameSchema);
@@ -151,6 +187,9 @@ router.post('/:id/seasons', ensureLocalEditor, async function(req, res, next){
     };
 });
 
+/** Get all season for an organization
+ * Returns id, title for each
+ */
 router.get('/:id/seasons', async function(req, res, next){
     try {
         const seasons = await Organization.getSeasons(req.params.id);
@@ -160,6 +199,7 @@ router.get('/:id/seasons', async function(req, res, next){
     };
 });
 
+/** Get single season, returns id, title, organization id */
 router.get('/:id/seasons/:seasonId', async function(req, res, next){
     try {
         const season = await Organization.getSeason(req.params.seasonId);
@@ -169,6 +209,7 @@ router.get('/:id/seasons/:seasonId', async function(req, res, next){
     };
 });
 
+/** Updates season title, returns id, title, organization id */
 router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate(req.body, seasonNameSchema);
@@ -176,8 +217,11 @@ router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, re
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
+
+        // Ensure correct organization for season
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+        
         const season = await Organization.updateSeason(req.params.seasonId, 
                                                     req.body.title);
         return res.json({season});
@@ -186,10 +230,14 @@ router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, re
     };
 });
 
+/** Deletes season */
 router.delete('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
+
+        // Ensures correct organization for season
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+        
         await Organization.removeSeason(req.params.seasonId);
         return res.json({deleted: req.params.seasonId});
     } catch(err) {
@@ -197,8 +245,18 @@ router.delete('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, r
     };
 });
 
+
+/**************************** Games ***************************/
+
+/** Add games to season
+ * Returns game id, team 1 and 2 ids, team 1 and 2 colors, team 1 and 2 names,
+ * team 1 and 2 scores, season id, formatted and unformatted date and time,
+ * location, notes for each
+ */
 router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(req, res, next){
     try {
+
+        // Ensure correct organization for season
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
         
@@ -215,6 +273,11 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
     };
 });
 
+/** Get all games from season
+ * Returns game id, team 1 and 2 ids, team 1 and 2 colors, team 1 and 2 names,
+ * team 1 and 2 scores, season id, formatted and unformatted date and time,
+ * location, notes for each
+ */
 router.get('/:id/seasons/:seasonId/games', async function(req, res, next){
     try {
         const ids = req.body.teamId ? {teamId: req.body.teamId, seasonId: req.params.seasonId}
@@ -226,8 +289,15 @@ router.get('/:id/seasons/:seasonId/games', async function(req, res, next){
     };
 });
 
+/** Updates game info
+ * Returns game id, team 1 and 2 ids, team 1 and 2 colors, team 1 and 2 names,
+ * team 1 and 2 scores, season id, formatted and unformatted date and time,
+ * location
+ */
 router.patch('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async function(req, res, next){
     try {
+
+        // Ensure correct organization for game
         const checkId = (await Organization.getGameOrganization(req.params.gameId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and game don't match`);
 
@@ -244,10 +314,14 @@ router.patch('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async fu
     };
 });
 
+/** Delete game */
 router.delete('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async function(req, res, next){
     try {
+
+        // Ensure correct organization for game
         const checkId = (await Organization.getGameOrganization(req.params.gameId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and game don't match`);
+        
         await Organization.removeGame(req.params.gameId);
         return res.json({deleted: req.params.gameId});
     } catch(err) {

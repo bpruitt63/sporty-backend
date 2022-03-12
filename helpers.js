@@ -2,6 +2,8 @@ const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("./config");
 const { BadRequestError } = require("./expressError");
 
+
+/** Creates jsonwebtoken with user information */
 function createToken(user) {
     let payload = {
         user: {
@@ -15,6 +17,7 @@ function createToken(user) {
     return jwt.sign(payload, SECRET_KEY);
 };
 
+/** Formats data for update queries that may include partial info */
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     const keys = Object.keys(dataToUpdate);
     if (keys.length === 0) throw new BadRequestError("No data");
@@ -29,6 +32,9 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     };
 };
 
+/** Formats data for queries that include variable length
+ * array of objects
+ */
 function sqlForObjectArray(dataArray, jsToSql) {
     if (!dataArray[0]) throw new BadRequestError("No data");
     let dollars = '';
@@ -53,7 +59,7 @@ function sqlForObjectArray(dataArray, jsToSql) {
 
 
 /**Transforms array of user/organization objects into
- * single user object with array of organization objects
+ * single user object with object of organization objects
  */
 function formatUserInfo(userRows) {
     let user = {
