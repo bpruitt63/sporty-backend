@@ -166,11 +166,11 @@ describe("seasonTeams", function(){
         expect(teams).toEqual([{seasonId: testSeasonIds[1], 
                                     teamId: testTeamIds[0],
                                     teamName: 'testTeam1',
-                                    teamColor: 'red'},
+                                    color: 'red'},
                                 {seasonId: testSeasonIds[1], 
                                     teamId: testTeamIds[1],
                                     teamName: 'testTeam2',
-                                    teamColor: 'black'}]);
+                                    color: 'black'}]);
     });
 });
 

@@ -140,11 +140,11 @@ describe("POST /organizations/:id/seasons/:seasonId/teams", function(){
                                     [{teamId: expect.any(Number),
                                         seasonId: testSeasonIds[0],
                                         teamName: 'test1',
-                                        teamColor: 'red'},
+                                        color: 'red'},
                                     {teamId: expect.any(Number),
                                         seasonId: testSeasonIds[0],
                                         teamName: 'test2',
-                                        teamColor: 'black'}]});
+                                        color: 'black'}]});
     });
 
     test("works team ids", async function(){
@@ -158,11 +158,11 @@ describe("POST /organizations/:id/seasons/:seasonId/teams", function(){
                                     [{teamId: testTeamIds[0],
                                         seasonId: testSeasonIds[1],
                                         teamName: 'testTeam1',
-                                        teamColor: 'red'},
+                                        color: 'red'},
                                     {teamId: testTeamIds[1],
                                         seasonId: testSeasonIds[1],
                                         teamName: 'testTeam2',
-                                        teamColor: 'black'}]});
+                                        color: 'black'}]});
     });
 
     test("fails unauth", async function(){

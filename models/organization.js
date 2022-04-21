@@ -127,7 +127,7 @@ class Organization {
                 (
                     SELECT color FROM teams
                     WHERE t."teamId" = id
-                ) AS "teamColor" FROM t`,
+                ) AS "color" FROM t`,
             [...values, seasonId]
         );
 
