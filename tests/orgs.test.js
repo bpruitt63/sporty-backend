@@ -299,10 +299,10 @@ describe("GET /organizations/:id/seasons", function(){
         const resp = await request(app)
             .get(`/organizations/${testOrgIds[0]}/seasons`);
         expect(resp.body).toEqual({seasons:
-                                    [{seasonId: testSeasonIds[0],
-                                        title: 'testSeason1'},
-                                    {seasonId: testSeasonIds[1],
-                                        title: 'testSeason2'}]})
+                                    [{seasonId: testSeasonIds[1],
+                                        title: 'testSeason2'},
+                                    {seasonId: testSeasonIds[0],
+                                        title: 'testSeason1'}]})
     });
 });
 

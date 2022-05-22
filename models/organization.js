@@ -226,7 +226,8 @@ class Organization {
         const result = await db.query(
             `SELECT id AS "seasonId", title
             FROM seasons
-            WHERE org_id = $1`,
+            WHERE org_id = $1
+            ORDER BY id DESC`,
             [orgId]
         );
         const seasons = result.rows;

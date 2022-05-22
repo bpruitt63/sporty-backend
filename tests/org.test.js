@@ -268,10 +268,10 @@ describe("addSeason", function(){
 describe("getSeasons", function(){
     test("works", async function(){
         const seasons = await Organization.getSeasons(testOrgIds[0]);
-        expect(seasons).toEqual([{seasonId: testSeasonIds[0],
-                                    title: 'testSeason1'},
-                                {seasonId: testSeasonIds[1],
-                                    title: 'testSeason2'}])
+        expect(seasons).toEqual([{seasonId: testSeasonIds[1],
+                                    title: 'testSeason2'},
+                                {seasonId: testSeasonIds[0],
+                                    title: 'testSeason1'}])
     });
 
     test("fails no seasons", async function(){
