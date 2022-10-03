@@ -265,7 +265,7 @@ describe("DELETE /organizations/:id/seasons/:seasonId/teams/:teamId", function()
 
 //POST add season
 describe("POST /organizations/:id/seasons", function(){
-    test("works", async function(){
+    test("works season", async function(){
         const resp = await request(app)
             .post(`/organizations/${testOrgIds[0]}/seasons`)
             .send({title: 'testSeason'})
@@ -273,7 +273,32 @@ describe("POST /organizations/:id/seasons", function(){
         expect(resp.body).toEqual({season:
                                     {seasonId: expect.any(Number),
                                     seasonTitle: 'testSeason',
-                                    orgId: testOrgIds[0]}});
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: null}});
+    });
+
+    test("works tournament", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons`)
+            .send({title: 'testSeason', tournamentFor: testSeasonIds[0]})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({season:
+                                    {seasonId: expect.any(Number),
+                                    seasonTitle: 'testSeason',
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: testSeasonIds[0]}});
+    });
+
+    test("sets null bad tournamentFor", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons`)
+            .send({title: 'testSeason', tournamentFor: -1})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({season:
+                                    {seasonId: expect.any(Number),
+                                    seasonTitle: 'testSeason',
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: null}});
     });
 
     test("fails unauth", async function(){
@@ -316,7 +341,8 @@ describe("PATCH /organizations/:id/seasons/:seasonId", function(){
         expect(resp.body).toEqual({season: {
                                     seasonId: testSeasonIds[0],
                                     title: 'newName',
-                                    orgId: testOrgIds[0]}})
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: null}})
     });
 
     test("fails unauth", async function(){

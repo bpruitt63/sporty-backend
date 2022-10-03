@@ -256,11 +256,30 @@ describe("removeTeam", function(){
 
 //Add season
 describe("addSeason", function(){
-    test("works", async function(){
+    test("works for season", async function(){
         const season = await Organization.addSeason('testSeason', testOrgIds[0]);
         expect(season).toEqual({seasonId: expect.any(Number),
                                 seasonTitle: 'testSeason',
-                                orgId: testOrgIds[0]});
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
+    });
+
+    test("works for tournament", async function(){
+        const season = await Organization.addSeason('testSeason', 
+                                                    testOrgIds[0],
+                                                    testSeasonIds[0]);
+        expect(season).toEqual({seasonId: expect.any(Number),
+                                seasonTitle: 'testSeason',
+                                orgId: testOrgIds[0],
+                                tournamentFor: testSeasonIds[0]});
+    });
+
+    test("makes null bad foreign key", async function(){
+        const season = await Organization.addSeason('testSeason', testOrgIds[0], -1);
+        expect(season).toEqual({seasonId: expect.any(Number),
+                                seasonTitle: 'testSeason',
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
     });
 });
 
@@ -280,7 +299,7 @@ describe("getSeasons", function(){
             fail();
         } catch (err) {
             expect(err instanceof NotFoundError).toBeTruthy();
-        }
+        };
     })
 });
 
@@ -290,7 +309,8 @@ describe("getSeason", function(){
         const season = await Organization.getSeason(testSeasonIds[0]);
         expect(season).toEqual({seasonId: testSeasonIds[0],
                                 title: 'testSeason1',
-                                orgId: testOrgIds[0]});
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
     });
 
     test("fails no season", async function(){

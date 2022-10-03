@@ -172,15 +172,19 @@ router.delete('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async f
 
 /*************************** Seasons **************************/
 
-/** Create season, returns season id and title, organization id */
+/** Create season, returns season id and title, organization id, tournamentFor */
 router.post('/:id/seasons', ensureLocalEditor, async function(req, res, next){
     try {
-        const validator = jsonschema.validate(req.body, seasonNameSchema);
+        const seasonData = req.body.tournamentFor ? req.body    
+                            : {...req.body, tournamentFor: null};
+        const validator = jsonschema.validate(seasonData, seasonNameSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
-        const season = await Organization.addSeason(req.body.title, req.params.id);
+        const season = await Organization.addSeason(seasonData.title, 
+                                                    req.params.id,
+                                                    seasonData.tournamentFor);
         return res.json({season});
     } catch(err) {
         return next(err);
@@ -212,7 +216,7 @@ router.get('/:id/seasons/:seasonId', async function(req, res, next){
 /** Updates season title, returns id, title, organization id */
 router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
-        const validator = jsonschema.validate(req.body, seasonNameSchema);
+        const validator = jsonschema.validate({...req.body, tournamentFor: null}, seasonNameSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
