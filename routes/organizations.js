@@ -191,7 +191,7 @@ router.post('/:id/seasons', ensureLocalEditor, async function(req, res, next){
     };
 });
 
-/** Get all season for an organization
+/** Get all seasons for an organization
  * Returns id, title for each
  */
 router.get('/:id/seasons', async function(req, res, next){
@@ -203,7 +203,7 @@ router.get('/:id/seasons', async function(req, res, next){
     };
 });
 
-/** Get single season, returns id, title, organization id */
+/** Get single season, returns id, title, organization id, tournament for */
 router.get('/:id/seasons/:seasonId', async function(req, res, next){
     try {
         const season = await Organization.getSeason(req.params.seasonId);
@@ -213,7 +213,7 @@ router.get('/:id/seasons/:seasonId', async function(req, res, next){
     };
 });
 
-/** Updates season title, returns id, title, organization id */
+/** Updates season title, returns id, title, organization id, tournament for */
 router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
         const validator = jsonschema.validate({...req.body, tournamentFor: null}, seasonNameSchema);

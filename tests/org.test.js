@@ -310,7 +310,8 @@ describe("getSeason", function(){
         expect(season).toEqual({seasonId: testSeasonIds[0],
                                 title: 'testSeason1',
                                 orgId: testOrgIds[0],
-                                tournamentFor: null});
+                                tournamentFor: null,
+                                seasonTournament: null});
     });
 
     test("fails no season", async function(){
@@ -329,7 +330,8 @@ describe("updateSeason", function(){
         const season = await Organization.updateSeason(testSeasonIds[0], 'newName');
         expect(season).toEqual({seasonId: testSeasonIds[0],
                                 title: 'newName',
-                                orgId: testOrgIds[0]});
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
     });
 
     test("fails no such season", async function(){

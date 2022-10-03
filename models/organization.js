@@ -249,15 +249,17 @@ class Organization {
         return seasons;
     };
 
-    //Get single season basic info
+    //Get single season basic info along with tournament connections
     static async getSeason(seasonId) {
         const result = await db.query(
-            `SELECT id AS "seasonId",
-                    title,
-                    org_id AS "orgId",
-                    tournament_for AS "tournamentFor"
-            FROM seasons
-            WHERE id = $1`,
+            `SELECT s1.id AS "seasonId",
+                    s1.title,
+                    s1.org_id AS "orgId",
+                    s1.tournament_for AS "tournamentFor",
+                    s2.id AS "seasonTournament"
+            FROM seasons s1 LEFT JOIN seasons s2
+            ON s1.id = s2.tournament_for
+            WHERE s1.id = $1`,
             [seasonId]
         );
         const season = result.rows[0];
@@ -277,9 +279,8 @@ class Organization {
                     tournament_for AS "tournamentFor"`,
             [title, seasonId]
         );
-        console.log(result)
+        
         const season = result.rows[0];
-        console.log(season)
         if (!season) throw new NotFoundError("Season not found");
         return season;
     };
@@ -490,83 +491,6 @@ class Organization {
         );
         const game = result.rows[0];
         if (!game) throw new NotFoundError("Game not found");
-    };
-
-
-/************************* TOURNAMENTS *****************************/
-
-
-    //Add tournament to database
-    static async addTournament(title, orgId, seasonId=null) {
-        const result = await db.query(
-            `INSERT INTO seasons (title, org_id, season_id)
-            VALUES ($1, $2, $3)
-            RETURNING id AS "seasonId", 
-                    title AS "seasonTitle", 
-                    org_id AS "orgId",
-                    season_id AS "seasonId"`,
-            [title, orgId, seasonId]
-        );
-        const tournament = result.rows[0];
-        if (!tournament) throw new BadRequestError("Tournament failed to save");
-        return tournament;
-    };
-
-    //Get all tournaments from an organization
-    static async getTournaments(orgId) {
-        const result = await db.query(
-            `SELECT id AS "tournamentId", title
-            FROM tournaments
-            WHERE org_id = $1
-            ORDER BY id DESC`,
-            [orgId]
-        );
-        const tournaments = result.rows;
-        if (!tournaments[0]) throw new NotFoundError("No tournaments found for organization");
-        return tournaments;
-    };
-
-    //Get single tournament basic info
-    static async getTournament(tournamentId) {
-        const result = await db.query(
-            `SELECT id AS "tournamentId",
-                    title,
-                    org_id AS "orgId"
-            FROM tournaments
-            WHERE id = $1`,
-            [tournamentId]
-        );
-        const tournament = result.rows[0];
-        if (!tournament) throw new NotFoundError("Tournament not found");
-        return tournament;
-    };
-
-    //Edit season name
-    static async updateSeason(seasonId, title) {
-        const result = await db.query(
-            `UPDATE seasons
-            SET title = $1
-            WHERE id = $2
-            RETURNING id AS "seasonId", 
-                    title, 
-                    org_id AS "orgId"`,
-            [title, seasonId]
-        );
-        const season = result.rows[0];
-        if (!season) throw new NotFoundError("Season not found");
-        return season;
-    };
-
-    //Delete season
-    static async removeSeason(seasonId) {
-        const result = await db.query(
-            `DELETE FROM seasons
-            WHERE id = $1
-            RETURNING id`,
-            [seasonId]
-        );
-        const season = result.rows[0];
-        if (!season) throw new NotFoundError("Season not found");
     };
 
 };

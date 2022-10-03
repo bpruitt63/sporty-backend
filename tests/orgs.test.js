@@ -331,6 +331,20 @@ describe("GET /organizations/:id/seasons", function(){
     });
 });
 
+//GET single season
+describe("GET /organizations/:id/seasons/:seasonId", function(){
+    test("works", async function(){
+        const resp = await request(app)
+            .get(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}`);
+        expect(resp.body).toEqual({season:
+                                    {seasonId: testSeasonIds[0],
+                                        orgId: testOrgIds[0],
+                                        title: 'testSeason1',
+                                        tournamentFor: null,
+                                        seasonTournament: null}})
+    });
+});
+
 //PATCH update season
 describe("PATCH /organizations/:id/seasons/:seasonId", function(){
     test("works", async function(){

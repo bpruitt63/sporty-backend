@@ -59,9 +59,9 @@ async function commonBeforeAll() {
             [testOrgIds[0], testOrgIds[1]]);
 
     const resultsSeasons = await db.query(`
-    INSERT INTO seasons (title, org_id)
-    VALUES ('testSeason1', $1),
-            ('testSeason2', $1)
+    INSERT INTO seasons (title, org_id, tournament_for)
+    VALUES ('testSeason1', $1, null),
+            ('testSeason2', $1, null)
     RETURNING id`,
     [testOrgIds[0]]);
     testSeasonIds.splice(0, 0, ...resultsSeasons.rows.map(r => r.id));
