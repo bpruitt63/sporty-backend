@@ -449,7 +449,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: 'testLocation',
                             team1Score: 22,
                             team2Score: 44,
-                            notes: 'very exciting'
+                            notes: 'very exciting',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: expect.any(Number),
@@ -467,7 +469,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: 'testLocation2',
                             team1Score: 65,
                             team2Score: 49,
-                            notes: 'not very exciting'}]})
+                            notes: 'not very exciting',
+                            tournamentRound: null,
+                            tournamentGame: null}]})
     });
 
     test("works only some fields", async function(){
@@ -509,7 +513,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: '',
                             team1Score: null,
                             team2Score: null,
-                            notes: ''
+                            notes: '',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: expect.any(Number),
@@ -527,7 +533,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: '',
                             team1Score: null,
                             team2Score: null,
-                            notes: ''}]})
+                            notes: '',
+                            tournamentRound: null,
+                            tournamentGame: null}]})
     });
 
     test("fails unauth", async function(){

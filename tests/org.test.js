@@ -401,7 +401,9 @@ describe("addGames", function(){
                                     gameLocation: 'testLocation',
                                     team1Score: 42,
                                     team2Score: 21,
-                                    notes: 'what a test'
+                                    notes: 'what a test',
+                                    tournamentRound: null,
+                                    tournamentGame: null
                                 },
                                 {
                                     gameId: expect.any(Number),
@@ -419,7 +421,9 @@ describe("addGames", function(){
                                     gameLocation: 'testLocation2',
                                     team1Score: 55,
                                     team2Score: 77,
-                                    notes: 'not a test'
+                                    notes: 'not a test',
+                                    tournamentRound: null,
+                                    tournamentGame: null
                                 }]);
     });
 });

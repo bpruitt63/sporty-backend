@@ -309,7 +309,9 @@ class Organization {
                         gameTime: 'game_time',
                         gameLocation: 'game_location',
                         team1Score: 'team_1_score',
-                        team2Score: 'team_2_score'};
+                        team2Score: 'team_2_score',
+                        tournamentRound: 'tournament_round',
+                        tournamentGame: 'tournament_game'};
 
         const {cols, values, dollars} = sqlForObjectArray(dataArray, jsToSql)
 
@@ -329,7 +331,9 @@ class Organization {
                             game_location AS "gameLocation",
                             team_1_score AS "team1Score",
                             team_2_score AS "team2Score",
-                            notes)
+                            notes,
+                            tournament_round AS "tournamentRound",
+                            tournament_game AS "tournamentGame")
             SELECT * FROM (
                 SELECT games.*, (
                     SELECT team_name FROM teams

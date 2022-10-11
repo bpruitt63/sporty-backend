@@ -5,7 +5,7 @@ const organizationNewSchema = require('../schemas/organizationNew.json');
 const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
 const gameSchema = require('../schemas/gameSchema.json');
-const { createToken } = require("../helpers");
+const { createToken, formatGamesList } = require("../helpers");
 const { BadRequestError, ForbiddenError } = require("../expressError");
 const { ensureLoggedIn, 
     ensureLocalAdmin, 
@@ -264,7 +264,8 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
         
-        const validator = jsonschema.validate(req.body.games, gameSchema);
+        const gamesArray = formatGamesList(req.body.games);
+        const validator = jsonschema.validate(gamesArray, gameSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);

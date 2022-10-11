@@ -55,6 +55,18 @@
             "notes": {
                 "type": "string",
                 "maxLength": 1000
+            },
+            "tournamentRound" : {
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]  
+            },
+            "tournamentGame" : {
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]  
             }
         },
         "additionalProperties": false,

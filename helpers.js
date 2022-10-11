@@ -76,8 +76,43 @@ function formatUserInfo(userRows) {
     return user;
 };
 
+
+/** Receives data on games, determines if data is regular season (array)
+ * or tournament (object).  Sets formatting in either case to expected
+ * format for adding games function
+ */
+function formatGamesList(games) {
+    return Array.isArray(games) ? formatSeasonGames(games) 
+                                : formatTournamentGames(games);
+};
+
+/** Adds tournament related null inputs to season games */
+function formatSeasonGames(games) {
+    for (let game of games) {
+        game.tournamentRound = null;
+        game.tournamentGame = null;
+    };
+    return games;
+};
+
+/** Takes nested object format of tournament and converts into array
+ * of game objects, with round and game numbers added to each game
+ */
+function formatTournamentGames(tournament) {
+    const gamesArray = [];
+    for (let round of Object.keys(tournament)) {
+        for (let game of Object.keys(tournament[round])) {
+            tournament[round][game].tournamentGame = parseInt(game.split(' ')[1]);
+            tournament[round][game].tournamentRound = parseInt(round.split(' ')[1]);
+            gamesArray.push(tournament[round][game])
+        }
+    };
+    return gamesArray;
+};
+
   
 module.exports = { createToken, 
     sqlForPartialUpdate, 
     formatUserInfo,
-    sqlForObjectArray};
+    sqlForObjectArray,
+    formatGamesList };
