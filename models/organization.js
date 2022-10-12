@@ -385,7 +385,7 @@ class Organization {
                         tournament_game AS "tournamentGame"
                 FROM games
                 WHERE ${query}
-                ORDER BY "gameDate", "gameTime")
+                ORDER BY "gameDate", "gameTime", "gameId")
             SELECT * FROM (
                 SELECT game.*, (
                     SELECT title FROM seasons
