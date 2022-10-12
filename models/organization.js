@@ -380,7 +380,9 @@ class Organization {
                         game_location AS "gameLocation",
                         team_1_score AS "team1Score",
                         team_2_score AS "team2Score",
-                        notes
+                        notes,
+                        tournament_round AS "tournamentRound",
+                        tournament_game AS "tournamentGame"
                 FROM games
                 WHERE ${query}
                 ORDER BY "gameDate", "gameTime")
@@ -409,7 +411,6 @@ class Organization {
             values
         );
         const games = result.rows;
-        if (!games[0]) throw new NotFoundError("No games found");
         return games;
     };
 
@@ -457,7 +458,9 @@ class Organization {
                             game_location AS "gameLocation",
                             team_1_score AS "team1Score",
                             team_2_score AS "team2Score",
-                            notes)
+                            notes,
+                            tournament_round AS "tournamentRound",
+                            tournament_game AS "tournamentGame")
             SELECT * FROM (
                 SELECT updated.*, (
                     SELECT team_name FROM teams

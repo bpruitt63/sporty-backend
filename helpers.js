@@ -102,6 +102,10 @@ function formatTournamentGames(tournament) {
     const gamesArray = [];
     for (let round of Object.keys(tournament)) {
         for (let game of Object.keys(tournament[round])) {
+            delete tournament[round][game].team1Name;
+            delete tournament[round][game].team2Name;
+            delete tournament[round][game].team1Color;
+            delete tournament[round][game].team2Color;
             tournament[round][game].tournamentGame = parseInt(game.split(' ')[1]);
             tournament[round][game].tournamentRound = parseInt(round.split(' ')[1]);
             gamesArray.push(tournament[round][game])
@@ -110,9 +114,22 @@ function formatTournamentGames(tournament) {
     return gamesArray;
 };
 
+
+function gamesListToTournament(games) {
+    const tournament = {};
+    for (let game of games) {
+        if (!(`Round ${game.tournamentRound}` in tournament)) {
+            tournament[`Round ${game.tournamentRound}`] = {};
+        };
+        tournament[`Round ${game.tournamentRound}`][`Game ${game.tournamentGame}`] = game;
+    };
+    return tournament;
+};
+
   
 module.exports = { createToken, 
     sqlForPartialUpdate, 
     formatUserInfo,
     sqlForObjectArray,
-    formatGamesList };
+    formatGamesList,
+    gamesListToTournament };

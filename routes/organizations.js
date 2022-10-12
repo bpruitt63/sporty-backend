@@ -5,7 +5,7 @@ const organizationNewSchema = require('../schemas/organizationNew.json');
 const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
 const gameSchema = require('../schemas/gameSchema.json');
-const { createToken, formatGamesList } = require("../helpers");
+const { createToken, formatGamesList, gamesListToTournament } = require("../helpers");
 const { BadRequestError, ForbiddenError } = require("../expressError");
 const { ensureLoggedIn, 
     ensureLocalAdmin, 
@@ -263,7 +263,13 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
         // Ensure correct organization for season
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
-        
+       
+        // If adding tournament, ensure season does not already have games
+        if (!(Array.isArray(req.body.games))) {
+            const checkGames = await Organization.getGames(({seasonId: req.params.seasonId}));
+            if (checkGames[0]) throw new ForbiddenError(`Cannot add tournament games to season`);
+        };
+
         const gamesArray = formatGamesList(req.body.games);
         const validator = jsonschema.validate(gamesArray, gameSchema);
         if (!validator.valid) {
@@ -271,7 +277,8 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
             throw new BadRequestError(errs);
         };
 
-        const games = await Organization.addGames(req.params.seasonId, req.body.games);
+        let games = await Organization.addGames(req.params.seasonId, gamesArray);
+        if (games[0].tournamentRound !== null) games = gamesListToTournament(games);
         return res.json({games});
     } catch(err) {
         return next(err);
@@ -287,7 +294,9 @@ router.get('/:id/seasons/:seasonId/games', async function(req, res, next){
     try {
         const ids = req.body.teamId ? {teamId: req.body.teamId, seasonId: req.params.seasonId}
                                     : {seasonId: req.params.seasonId};
-        const games = await Organization.getGames(ids);
+        let games = await Organization.getGames(ids);
+        if (!games[0]) throw new NotFoundError("No games found");
+        if (games[0].tournamentRound !== null) games = gamesListToTournament(games);
         return res.json({games});
     } catch(err) {
         return next(err);

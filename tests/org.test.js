@@ -449,7 +449,9 @@ describe("getGames", function(){
                             team1Name: 'testTeam1',
                             team1Color: 'red',
                             team2Name: 'testTeam2',
-                            team2Color: 'black'
+                            team2Color: 'black',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: testGameIds[1],
@@ -468,7 +470,9 @@ describe("getGames", function(){
                             team1Name: 'testTeam2',
                             team1Color: 'black',
                             team2Name: 'testTeam1',
-                            team2Color: 'red'
+                            team2Color: 'red',
+                            tournamentRound: null,
+                            tournamentGame: null
                         }])
     });
 
@@ -491,7 +495,9 @@ describe("getGames", function(){
                             team1Name: 'testTeam1',
                             team1Color: 'red',
                             team2Name: 'testTeam2',
-                            team2Color: 'black'
+                            team2Color: 'black',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: testGameIds[1],
@@ -510,18 +516,11 @@ describe("getGames", function(){
                             team1Name: 'testTeam2',
                             team1Color: 'black',
                             team2Name: 'testTeam1',
-                            team2Color: 'red'
+                            team2Color: 'red',
+                            tournamentRound: null,
+                            tournamentGame: null
                         }])
     });
-
-    test("fails no games", async function(){
-        try {
-            await Organization.getGames({teamId: -1});
-            fail();
-        } catch (err) {
-            expect(err instanceof NotFoundError).toBeTruthy();
-        }
-    })
 });
 
 //Get game organization
@@ -561,7 +560,9 @@ describe("updateGame", function(){
                         team1Name: 'testTeam1',
                         team2Name: 'testTeam2',
                         team1Color: 'red',
-                        team2Color: 'black'
+                        team2Color: 'black',
+                        tournamentRound: null,
+                        tournamentGame: null
                     })
     });
 

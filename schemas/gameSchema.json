@@ -8,10 +8,16 @@
         "type": "object",
         "properties": {
             "team1Id" : {
-                "type": "integer"
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]
             },
             "team2Id" : {
-                "type": "integer"
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]
             },
             "gameDate" : {
                 "oneOf": [
@@ -70,9 +76,6 @@
             }
         },
         "additionalProperties": false,
-        "required": [
-            "team1Id",
-            "team2Id"
-        ]
+        "required": []
     }
 }
