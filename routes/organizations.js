@@ -292,6 +292,11 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
  */
 router.get('/:id/seasons/:seasonId/games', async function(req, res, next){
     try {
+
+        // Ensure correct organization for season
+        const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+
         const ids = req.body.teamId ? {teamId: req.body.teamId, seasonId: req.params.seasonId}
                                     : {seasonId: req.params.seasonId};
         let games = await Organization.getGames(ids);
