@@ -106,6 +106,8 @@ function formatTournamentGames(tournament) {
             delete tournament[round][game].team2Name;
             delete tournament[round][game].team1Color;
             delete tournament[round][game].team2Color;
+            tournament[round][game].team1Id = parseInt(tournament[round][game].team1Id) || null;
+            tournament[round][game].team2Id = parseInt(tournament[round][game].team2Id) || null;
             tournament[round][game].tournamentGame = parseInt(game.split(' ')[1]);
             tournament[round][game].tournamentRound = parseInt(round.split(' ')[1]);
             gamesArray.push(tournament[round][game])

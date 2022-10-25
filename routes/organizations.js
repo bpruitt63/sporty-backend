@@ -6,7 +6,7 @@ const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
 const gameSchema = require('../schemas/gameSchema.json');
 const { createToken, formatGamesList, gamesListToTournament } = require("../helpers");
-const { BadRequestError, ForbiddenError } = require("../expressError");
+const { BadRequestError, ForbiddenError, NotFoundError } = require("../expressError");
 const { ensureLoggedIn, 
     ensureLocalAdmin, 
     ensureLocalEditor } = require('../middleware/auth');
@@ -256,6 +256,7 @@ router.delete('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, r
  * Returns game id, team 1 and 2 ids, team 1 and 2 colors, team 1 and 2 names,
  * team 1 and 2 scores, season id, formatted and unformatted date and time,
  * location, notes for each
+ * Works for season or tournament, formats each accordingly
  */
 router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(req, res, next){
     try {
