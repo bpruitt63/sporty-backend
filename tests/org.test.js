@@ -288,9 +288,11 @@ describe("getSeasons", function(){
     test("works", async function(){
         const seasons = await Organization.getSeasons(testOrgIds[0]);
         expect(seasons).toEqual([{seasonId: testSeasonIds[1],
-                                    title: 'testSeason2'},
+                                    title: 'testSeason2', 
+                                    tournamentFor: null},
                                 {seasonId: testSeasonIds[0],
-                                    title: 'testSeason1'}])
+                                    title: 'testSeason1', 
+                                    tournamentFor: null}])
     });
 
     test("fails no seasons", async function(){

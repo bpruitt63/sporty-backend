@@ -238,7 +238,7 @@ class Organization {
     //Get all seasons from an organization
     static async getSeasons(orgId) {
         const result = await db.query(
-            `SELECT id AS "seasonId", title
+            `SELECT id AS "seasonId", title, tournament_for AS "tournamentFor"
             FROM seasons
             WHERE org_id = $1
             ORDER BY id DESC`,

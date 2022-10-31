@@ -325,11 +325,14 @@ describe("GET /organizations/:id/seasons", function(){
             .get(`/organizations/${testOrgIds[0]}/seasons`);
         expect(resp.body).toEqual({seasons:
                                     [{seasonId: testSeasonIds[2],
-                                        title: 'testTournament1'},
+                                        title: 'testTournament1', 
+                                        tournamentFor: null},
                                     {seasonId: testSeasonIds[1],
-                                        title: 'testSeason2'},
+                                        title: 'testSeason2', 
+                                        tournamentFor: null},
                                     {seasonId: testSeasonIds[0],
-                                        title: 'testSeason1'}
+                                        title: 'testSeason1', 
+                                        tournamentFor: null}
                                     ]})
     });
 });

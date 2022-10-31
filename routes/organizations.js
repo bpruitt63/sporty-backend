@@ -109,7 +109,6 @@ router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(re
             const res = await Organization.addTeams(req.body.teams, req.params.id);
             ids = res.map(r => ({teamId: r.teamId}));
         };
-
         // Add teams to season
         const teams = await Organization.seasonTeams(ids, req.params.seasonId);
                     
