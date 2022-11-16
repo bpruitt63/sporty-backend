@@ -22,7 +22,8 @@ CREATE TABLE user_organizations (
 CREATE TABLE seasons (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
-    org_id INTEGER REFERENCES organizations ON DELETE CASCADE
+    org_id INTEGER REFERENCES organizations ON DELETE CASCADE,
+    tournament_for INTEGER REFERENCES seasons ON DELETE SET NULL
 );
 
 CREATE TABLE teams (
@@ -48,5 +49,7 @@ CREATE TABLE games (
     game_location TEXT,
     team_1_score INTEGER,
     team_2_score INTEGER,
-    notes TEXT
+    notes TEXT,
+    tournament_round INTEGER,
+    tournament_game INTEGER
 );

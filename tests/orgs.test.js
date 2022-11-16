@@ -265,7 +265,7 @@ describe("DELETE /organizations/:id/seasons/:seasonId/teams/:teamId", function()
 
 //POST add season
 describe("POST /organizations/:id/seasons", function(){
-    test("works", async function(){
+    test("works season", async function(){
         const resp = await request(app)
             .post(`/organizations/${testOrgIds[0]}/seasons`)
             .send({title: 'testSeason'})
@@ -273,7 +273,32 @@ describe("POST /organizations/:id/seasons", function(){
         expect(resp.body).toEqual({season:
                                     {seasonId: expect.any(Number),
                                     seasonTitle: 'testSeason',
-                                    orgId: testOrgIds[0]}});
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: null}});
+    });
+
+    test("works tournament", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons`)
+            .send({title: 'testSeason', tournamentFor: testSeasonIds[0]})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({season:
+                                    {seasonId: expect.any(Number),
+                                    seasonTitle: 'testSeason',
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: testSeasonIds[0]}});
+    });
+
+    test("sets null bad tournamentFor", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons`)
+            .send({title: 'testSeason', tournamentFor: -1})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({season:
+                                    {seasonId: expect.any(Number),
+                                    seasonTitle: 'testSeason',
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: null}});
     });
 
     test("fails unauth", async function(){
@@ -299,10 +324,30 @@ describe("GET /organizations/:id/seasons", function(){
         const resp = await request(app)
             .get(`/organizations/${testOrgIds[0]}/seasons`);
         expect(resp.body).toEqual({seasons:
-                                    [{seasonId: testSeasonIds[1],
-                                        title: 'testSeason2'},
+                                    [{seasonId: testSeasonIds[2],
+                                        title: 'testTournament1', 
+                                        tournamentFor: null},
+                                    {seasonId: testSeasonIds[1],
+                                        title: 'testSeason2', 
+                                        tournamentFor: null},
                                     {seasonId: testSeasonIds[0],
-                                        title: 'testSeason1'}]})
+                                        title: 'testSeason1', 
+                                        tournamentFor: null}
+                                    ]})
+    });
+});
+
+//GET single season
+describe("GET /organizations/:id/seasons/:seasonId", function(){
+    test("works", async function(){
+        const resp = await request(app)
+            .get(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}`);
+        expect(resp.body).toEqual({season:
+                                    {seasonId: testSeasonIds[0],
+                                        orgId: testOrgIds[0],
+                                        title: 'testSeason1',
+                                        tournamentFor: null,
+                                        seasonTournament: null}})
     });
 });
 
@@ -316,7 +361,8 @@ describe("PATCH /organizations/:id/seasons/:seasonId", function(){
         expect(resp.body).toEqual({season: {
                                     seasonId: testSeasonIds[0],
                                     title: 'newName',
-                                    orgId: testOrgIds[0]}})
+                                    orgId: testOrgIds[0],
+                                    tournamentFor: null}})
     });
 
     test("fails unauth", async function(){
@@ -409,7 +455,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: 'testLocation',
                             team1Score: 22,
                             team2Score: 44,
-                            notes: 'very exciting'
+                            notes: 'very exciting',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: expect.any(Number),
@@ -427,7 +475,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: 'testLocation2',
                             team1Score: 65,
                             team2Score: 49,
-                            notes: 'not very exciting'}]})
+                            notes: 'not very exciting',
+                            tournamentRound: null,
+                            tournamentGame: null}]})
     });
 
     test("works only some fields", async function(){
@@ -469,7 +519,9 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: '',
                             team1Score: null,
                             team2Score: null,
-                            notes: ''
+                            notes: '',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: expect.any(Number),
@@ -487,7 +539,184 @@ describe('POST /organizations/:id/seasons/:seasonId/games', function(){
                             gameLocation: '',
                             team1Score: null,
                             team2Score: null,
-                            notes: ''}]})
+                            notes: '',
+                            tournamentRound: null,
+                            tournamentGame: null}]})
+    });
+
+    test("works tournament", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[2]}/games`)
+            .send({games: {
+                'Round 1': {
+                    'Game 1': {
+                        team1Id: testTeamIds[0],
+                        team2Id: testTeamIds[1],
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'testTeam1',
+                        team2Name: 'testTeam2'
+                    },
+                    'Game 2': {
+                        team1Id: testTeamIds[2],
+                        team2Id: testTeamIds[3],
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'testTeam3',
+                        team2Name: 'testTeam4'
+                    }
+                },
+                'Round 2': {
+                    'Game 1': {
+                        team1Id: null,
+                        team2Id: null,
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'N/A',
+                        team2Name: 'N/A'
+                    },
+                    'Game 2': {
+                        team1Id: null,
+                        team2Id: null,
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'N/A',
+                        team2Name: 'N/A'
+                    }
+                }
+            }})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({games: {
+            'Round 1': {
+                'Game 1': {
+                    gameId: expect.any(Number),
+                    seasonId: testSeasonIds[2],
+                    team1Id: testTeamIds[0],
+                    team2Id: testTeamIds[1],
+                    team1Color: 'red',
+                    team2Color: 'black',
+                    team1Name: 'testTeam1',
+                    team2Name: 'testTeam2',
+                    gameDate: null,
+                    gameTime: null,
+                    readableDate: null,
+                    readableTime: null,
+                    gameLocation: null,
+                    team1Score: null,
+                    team2Score: null,
+                    notes: null,
+                    tournamentRound: 1,
+                    tournamentGame: 1
+                },
+                'Game 2': {
+                    gameId: expect.any(Number),
+                    seasonId: testSeasonIds[2],
+                    team1Id: testTeamIds[2],
+                    team2Id: testTeamIds[3],
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'testTeam3',
+                    team2Name: 'testTeam4',
+                    gameDate: null,
+                    gameTime: null,
+                    readableDate: null,
+                    readableTime: null,
+                    gameLocation: null,
+                    team1Score: null,
+                    team2Score: null,
+                    notes: null,
+                    tournamentRound: 1,
+                    tournamentGame: 2
+                }
+            },
+            'Round 2': {
+                'Game 1': {
+                    gameId: expect.any(Number),
+                    seasonId: testSeasonIds[2],
+                    team1Id: null,
+                    team2Id: null,
+                    team1Color: null,
+                    team2Color: null,
+                    team1Name: null,
+                    team2Name: null,
+                    gameDate: null,
+                    gameTime: null,
+                    readableDate: null,
+                    readableTime: null,
+                    gameLocation: null,
+                    team1Score: null,
+                    team2Score: null,
+                    notes: null,
+                    tournamentRound: 2,
+                    tournamentGame: 1
+                },
+                'Game 2': {
+                    gameId: expect.any(Number),
+                    seasonId: testSeasonIds[2],
+                    team1Id: null,
+                    team2Id: null,
+                    team1Color: null,
+                    team2Color: null,
+                    team1Name: null,
+                    team2Name: null,
+                    gameDate: null,
+                    gameTime: null,
+                    readableDate: null,
+                    readableTime: null,
+                    gameLocation: null,
+                    team1Score: null,
+                    team2Score: null,
+                    notes: null,
+                    tournamentRound: 2,
+                    tournamentGame: 2
+                }
+            }
+        }})
+    });
+
+    test("won't add tournament games to season that already has games", async function(){
+        const resp = await request(app)
+            .post(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games`)
+            .send({games: {
+                'Round 1': {
+                    'Game 1': {
+                        team1Id: testTeamIds[0],
+                        team2Id: testTeamIds[1],
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'testTeam1',
+                        team2Name: 'testTeam2'
+                    },
+                    'Game 2': {
+                        team1Id: testTeamIds[2],
+                        team2Id: testTeamIds[3],
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'testTeam3',
+                        team2Name: 'testTeam4'
+                    }
+                },
+                'Round 2': {
+                    'Game 1': {
+                        team1Id: null,
+                        team2Id: null,
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'N/A',
+                        team2Name: 'N/A'
+                    },
+                    'Game 2': {
+                        team1Id: null,
+                        team2Id: null,
+                        team1Color: 'N/A',
+                        team2Color: 'N/A',
+                        team1Name: 'N/A',
+                        team2Name: 'N/A'
+                    }
+                }
+            }})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.statusCode).toEqual(403);
     });
 
     test("fails unauth", async function(){
@@ -565,7 +794,9 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Name: 'testTeam1',
                                 team1Color: 'red',
                                 team2Name: 'testTeam2',
-                                team2Color: 'black'
+                                team2Color: 'black',
+                                tournamentRound: null,
+                                tournamentGame: null
                             },
                             {
                                 gameId: testGameIds[1],
@@ -584,7 +815,9 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
                                 team2Name: 'testTeam1',
-                                team2Color: 'red'
+                                team2Color: 'red',
+                                tournamentRound: null,
+                                tournamentGame: null
                             },
                             {
                                 gameId: testGameIds[2],
@@ -603,7 +836,9 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
                                 team2Name: 'testTeam3',
-                                team2Color: 'N/A'
+                                team2Color: 'N/A',
+                                tournamentRound: null,
+                                tournamentGame: null
                             }]});
     });
 
@@ -628,7 +863,9 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Name: 'testTeam1',
                                 team1Color: 'red',
                                 team2Name: 'testTeam2',
-                                team2Color: 'black'
+                                team2Color: 'black',
+                                tournamentRound: null,
+                                tournamentGame: null
                             },
                             {
                                 gameId: testGameIds[1],
@@ -647,7 +884,9 @@ describe("GET /organizations/:id/seasons/:seasonId/games", function(){
                                 team1Name: 'testTeam2',
                                 team1Color: 'black',
                                 team2Name: 'testTeam1',
-                                team2Color: 'red'
+                                team2Color: 'red',
+                                tournamentRound: null,
+                                tournamentGame: null
                             }]});
     });
 });
@@ -683,7 +922,9 @@ describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
                                     team1Name: 'testTeam2',
                                     team2Name: 'testTeam1',
                                     team1Color: 'black',
-                                    team2Color: 'red'
+                                    team2Color: 'red',
+                                    tournamentRound: null,
+                                    tournamentGame: null
                                 }});
     });
 

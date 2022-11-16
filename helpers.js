@@ -76,8 +76,62 @@ function formatUserInfo(userRows) {
     return user;
 };
 
+
+/** Receives data on games, determines if data is regular season (array)
+ * or tournament (object).  Sets formatting in either case to expected
+ * format for adding games function
+ */
+function formatGamesList(games) {
+    return Array.isArray(games) ? formatSeasonGames(games) 
+                                : formatTournamentGames(games);
+};
+
+/** Adds tournament related null inputs to season games */
+function formatSeasonGames(games) {
+    for (let game of games) {
+        game.tournamentRound = null;
+        game.tournamentGame = null;
+    };
+    return games;
+};
+
+/** Takes nested object format of tournament and converts into array
+ * of game objects, with round and game numbers added to each game
+ */
+function formatTournamentGames(tournament) {
+    const gamesArray = [];
+    for (let round of Object.keys(tournament)) {
+        for (let game of Object.keys(tournament[round])) {
+            delete tournament[round][game].team1Name;
+            delete tournament[round][game].team2Name;
+            delete tournament[round][game].team1Color;
+            delete tournament[round][game].team2Color;
+            tournament[round][game].team1Id = parseInt(tournament[round][game].team1Id) || null;
+            tournament[round][game].team2Id = parseInt(tournament[round][game].team2Id) || null;
+            tournament[round][game].tournamentGame = parseInt(game.split(' ')[1]);
+            tournament[round][game].tournamentRound = parseInt(round.split(' ')[1]);
+            gamesArray.push(tournament[round][game])
+        }
+    };
+    return gamesArray;
+};
+
+
+function gamesListToTournament(games) {
+    const tournament = {};
+    for (let game of games) {
+        if (!(`Round ${game.tournamentRound}` in tournament)) {
+            tournament[`Round ${game.tournamentRound}`] = {};
+        };
+        tournament[`Round ${game.tournamentRound}`][`Game ${game.tournamentGame}`] = game;
+    };
+    return tournament;
+};
+
   
 module.exports = { createToken, 
     sqlForPartialUpdate, 
     formatUserInfo,
-    sqlForObjectArray};
+    sqlForObjectArray,
+    formatGamesList,
+    gamesListToTournament };

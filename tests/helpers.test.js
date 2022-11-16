@@ -1,7 +1,9 @@
 const { createToken, 
     sqlForPartialUpdate, 
     formatUserInfo,
-    sqlForObjectArray } = require("../helpers");
+    sqlForObjectArray, 
+    formatGamesList,
+    gamesListToTournament} = require("../helpers");
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config");
 
@@ -286,5 +288,169 @@ describe("formatUserInfo", function(){
                 }
             }
         });
+    });
+});
+
+
+describe('formatGamesList', function() {
+    test('works tournament', function(){
+        const tournament = {
+            'Round 1': {
+                'Game 1': {
+                    team1Id: 1,
+                    team2Id: 2,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team1',
+                    team2Name: 'team2'
+                },
+                'Game 2': {
+                    team1Id: 3,
+                    team2Id: 4,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team3',
+                    team2Name: 'team4'
+                }
+            },
+            'Round 2': {
+                'Game 1': {
+                    team1Id: 5,
+                    team2Id: 6,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team5',
+                    team2Name: 'team6'
+                },
+                'Game 2': {
+                    team1Id: 7,
+                    team2Id: 11,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team7',
+                    team2Name: 'team11'
+                }
+            }
+        };
+        const result = formatGamesList(tournament);
+        expect(result).toEqual([
+            {
+                team1Id: 1,
+                team2Id: 2,
+                tournamentRound: 1,
+                tournamentGame: 1
+            },
+            {
+                team1Id: 3,
+                team2Id: 4,
+                tournamentRound: 1,
+                tournamentGame: 2
+            },
+            {
+                team1Id: 5,
+                team2Id: 6,
+                tournamentRound: 2,
+                tournamentGame: 1
+            },
+            {
+                team1Id: 7,
+                team2Id: 11,
+                tournamentRound: 2,
+                tournamentGame: 2
+            }])
+    });
+});
+
+
+describe('gamesListToTournament', function() {
+    test('works', function() {
+        const gamesList = [
+            {
+                team1Id: 1,
+                team2Id: 2,
+                team1Color: 'N/A',
+                team2Color: 'N/A',
+                team1Name: 'team1',
+                team2Name: 'team2',
+                tournamentRound: 1,
+                tournamentGame: 1
+            },
+            {
+                team1Id: 3,
+                team2Id: 4,
+                team1Color: 'N/A',
+                team2Color: 'N/A',
+                team1Name: 'team3',
+                team2Name: 'team4',
+                tournamentRound: 1,
+                tournamentGame: 2
+            },
+            {
+                team1Id: 5,
+                team2Id: 6,
+                team1Color: 'N/A',
+                team2Color: 'N/A',
+                team1Name: 'team5',
+                team2Name: 'team6',
+                tournamentRound: 2,
+                tournamentGame: 1
+            },
+            {
+                team1Id: 7,
+                team2Id: 11,
+                team1Color: 'N/A',
+                team2Color: 'N/A',
+                team1Name: 'team7',
+                team2Name: 'team11',
+                tournamentRound: 2,
+                tournamentGame: 2
+            }];
+        const result = gamesListToTournament(gamesList);
+        expect(result).toEqual({
+            'Round 1': {
+                'Game 1': {
+                    team1Id: 1,
+                    team2Id: 2,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team1',
+                    team2Name: 'team2',
+                    tournamentRound: 1,
+                    tournamentGame: 1
+                },
+                'Game 2': {
+                    team1Id: 3,
+                    team2Id: 4,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team3',
+                    team2Name: 'team4',
+                    tournamentRound: 1,
+                    tournamentGame: 2
+                }
+            },
+            'Round 2': {
+                'Game 1': {
+                    team1Id: 5,
+                    team2Id: 6,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team5',
+                    team2Name: 'team6',
+                    tournamentRound: 2,
+                    tournamentGame: 1
+                },
+                'Game 2': {
+                    team1Id: 7,
+                    team2Id: 11,
+                    team1Color: 'N/A',
+                    team2Color: 'N/A',
+                    team1Name: 'team7',
+                    team2Name: 'team11',
+                    tournamentRound: 2,
+                    tournamentGame: 2
+                }
+            }
+        })
     });
 });

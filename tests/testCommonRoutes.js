@@ -23,13 +23,16 @@ async function commonBeforeAll() {
 
     testSeasonIds[0] = (await Organization.addSeason('testSeason1', testOrgIds[0])).seasonId;
     testSeasonIds[1] = (await Organization.addSeason('testSeason2', testOrgIds[0])).seasonId;
+    testSeasonIds[2] = (await Organization.addSeason('testTournament1', testOrgIds[0])).seasonId;
 
     const testTeams = await Organization.addTeams([{teamName: 'testTeam1', color: 'red'}, 
                                                     {teamName: 'testTeam2', color: 'black'},
-                                                    {teamName: 'testTeam3', color: 'N/A'}], testOrgIds[0]);
+                                                    {teamName: 'testTeam3', color: 'N/A'},
+                                                    {teamName: 'testTeam4', color: 'N/A'}], testOrgIds[0]);
     testTeamIds[0] = testTeams[0].teamId;
     testTeamIds[1] = testTeams[1].teamId;
     testTeamIds[2] = testTeams[2].teamId;
+    testTeamIds[3] = testTeams[3].teamId;
 
     await Organization.seasonTeams([{teamId: testTeamIds[0]}, 
                                     {teamId: testTeamIds[1]},

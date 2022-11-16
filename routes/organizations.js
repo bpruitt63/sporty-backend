@@ -5,8 +5,8 @@ const organizationNewSchema = require('../schemas/organizationNew.json');
 const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
 const gameSchema = require('../schemas/gameSchema.json');
-const { createToken } = require("../helpers");
-const { BadRequestError, ForbiddenError } = require("../expressError");
+const { createToken, formatGamesList, gamesListToTournament } = require("../helpers");
+const { BadRequestError, ForbiddenError, NotFoundError } = require("../expressError");
 const { ensureLoggedIn, 
     ensureLocalAdmin, 
     ensureLocalEditor } = require('../middleware/auth');
@@ -109,7 +109,6 @@ router.post('/:id/seasons/:seasonId/teams', ensureLocalEditor, async function(re
             const res = await Organization.addTeams(req.body.teams, req.params.id);
             ids = res.map(r => ({teamId: r.teamId}));
         };
-
         // Add teams to season
         const teams = await Organization.seasonTeams(ids, req.params.seasonId);
                     
@@ -172,22 +171,26 @@ router.delete('/:id/seasons/:seasonId/teams/:teamId', ensureLocalEditor, async f
 
 /*************************** Seasons **************************/
 
-/** Create season, returns season id and title, organization id */
+/** Create season, returns season id and title, organization id, tournamentFor */
 router.post('/:id/seasons', ensureLocalEditor, async function(req, res, next){
     try {
-        const validator = jsonschema.validate(req.body, seasonNameSchema);
+        const seasonData = req.body.tournamentFor ? req.body    
+                            : {...req.body, tournamentFor: null};
+        const validator = jsonschema.validate(seasonData, seasonNameSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
-        const season = await Organization.addSeason(req.body.title, req.params.id);
+        const season = await Organization.addSeason(seasonData.title, 
+                                                    req.params.id,
+                                                    seasonData.tournamentFor);
         return res.json({season});
     } catch(err) {
         return next(err);
     };
 });
 
-/** Get all season for an organization
+/** Get all seasons for an organization
  * Returns id, title for each
  */
 router.get('/:id/seasons', async function(req, res, next){
@@ -199,7 +202,7 @@ router.get('/:id/seasons', async function(req, res, next){
     };
 });
 
-/** Get single season, returns id, title, organization id */
+/** Get single season, returns id, title, organization id, tournament for */
 router.get('/:id/seasons/:seasonId', async function(req, res, next){
     try {
         const season = await Organization.getSeason(req.params.seasonId);
@@ -209,10 +212,10 @@ router.get('/:id/seasons/:seasonId', async function(req, res, next){
     };
 });
 
-/** Updates season title, returns id, title, organization id */
+/** Updates season title, returns id, title, organization id, tournament for */
 router.patch('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, res, next){
     try {
-        const validator = jsonschema.validate(req.body, seasonNameSchema);
+        const validator = jsonschema.validate({...req.body, tournamentFor: null}, seasonNameSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
@@ -252,6 +255,7 @@ router.delete('/:id/seasons/:seasonId', ensureLocalEditor, async function(req, r
  * Returns game id, team 1 and 2 ids, team 1 and 2 colors, team 1 and 2 names,
  * team 1 and 2 scores, season id, formatted and unformatted date and time,
  * location, notes for each
+ * Works for season or tournament, formats each accordingly
  */
 router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(req, res, next){
     try {
@@ -259,14 +263,22 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
         // Ensure correct organization for season
         const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
-        
-        const validator = jsonschema.validate(req.body.games, gameSchema);
+       
+        // If adding tournament, ensure season does not already have games
+        if (!(Array.isArray(req.body.games))) {
+            const checkGames = await Organization.getGames(({seasonId: req.params.seasonId}));
+            if (checkGames[0]) throw new ForbiddenError(`Cannot add tournament games to season`);
+        };
+
+        const gamesArray = formatGamesList(req.body.games);
+        const validator = jsonschema.validate(gamesArray, gameSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         };
 
-        const games = await Organization.addGames(req.params.seasonId, req.body.games);
+        let games = await Organization.addGames(req.params.seasonId, gamesArray);
+        if (games[0].tournamentRound !== null) games = gamesListToTournament(games);
         return res.json({games});
     } catch(err) {
         return next(err);
@@ -280,9 +292,16 @@ router.post('/:id/seasons/:seasonId/games', ensureLocalEditor, async function(re
  */
 router.get('/:id/seasons/:seasonId/games', async function(req, res, next){
     try {
+
+        // Ensure correct organization for season
+        const checkId = (await Organization.getSeason(req.params.seasonId)).orgId;
+        if (checkId != req.params.id) throw new ForbiddenError(`Organization and season don't match`);
+
         const ids = req.body.teamId ? {teamId: req.body.teamId, seasonId: req.params.seasonId}
                                     : {seasonId: req.params.seasonId};
-        const games = await Organization.getGames(ids);
+        let games = await Organization.getGames(ids);
+        if (!games[0]) throw new NotFoundError("No games found");
+        if (games[0].tournamentRound !== null) games = gamesListToTournament(games);
         return res.json({games});
     } catch(err) {
         return next(err);

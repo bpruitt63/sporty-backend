@@ -256,11 +256,30 @@ describe("removeTeam", function(){
 
 //Add season
 describe("addSeason", function(){
-    test("works", async function(){
+    test("works for season", async function(){
         const season = await Organization.addSeason('testSeason', testOrgIds[0]);
         expect(season).toEqual({seasonId: expect.any(Number),
                                 seasonTitle: 'testSeason',
-                                orgId: testOrgIds[0]});
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
+    });
+
+    test("works for tournament", async function(){
+        const season = await Organization.addSeason('testSeason', 
+                                                    testOrgIds[0],
+                                                    testSeasonIds[0]);
+        expect(season).toEqual({seasonId: expect.any(Number),
+                                seasonTitle: 'testSeason',
+                                orgId: testOrgIds[0],
+                                tournamentFor: testSeasonIds[0]});
+    });
+
+    test("makes null bad foreign key", async function(){
+        const season = await Organization.addSeason('testSeason', testOrgIds[0], -1);
+        expect(season).toEqual({seasonId: expect.any(Number),
+                                seasonTitle: 'testSeason',
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
     });
 });
 
@@ -269,9 +288,11 @@ describe("getSeasons", function(){
     test("works", async function(){
         const seasons = await Organization.getSeasons(testOrgIds[0]);
         expect(seasons).toEqual([{seasonId: testSeasonIds[1],
-                                    title: 'testSeason2'},
+                                    title: 'testSeason2', 
+                                    tournamentFor: null},
                                 {seasonId: testSeasonIds[0],
-                                    title: 'testSeason1'}])
+                                    title: 'testSeason1', 
+                                    tournamentFor: null}])
     });
 
     test("fails no seasons", async function(){
@@ -280,7 +301,7 @@ describe("getSeasons", function(){
             fail();
         } catch (err) {
             expect(err instanceof NotFoundError).toBeTruthy();
-        }
+        };
     })
 });
 
@@ -290,7 +311,9 @@ describe("getSeason", function(){
         const season = await Organization.getSeason(testSeasonIds[0]);
         expect(season).toEqual({seasonId: testSeasonIds[0],
                                 title: 'testSeason1',
-                                orgId: testOrgIds[0]});
+                                orgId: testOrgIds[0],
+                                tournamentFor: null,
+                                seasonTournament: null});
     });
 
     test("fails no season", async function(){
@@ -309,7 +332,8 @@ describe("updateSeason", function(){
         const season = await Organization.updateSeason(testSeasonIds[0], 'newName');
         expect(season).toEqual({seasonId: testSeasonIds[0],
                                 title: 'newName',
-                                orgId: testOrgIds[0]});
+                                orgId: testOrgIds[0],
+                                tournamentFor: null});
     });
 
     test("fails no such season", async function(){
@@ -379,7 +403,9 @@ describe("addGames", function(){
                                     gameLocation: 'testLocation',
                                     team1Score: 42,
                                     team2Score: 21,
-                                    notes: 'what a test'
+                                    notes: 'what a test',
+                                    tournamentRound: null,
+                                    tournamentGame: null
                                 },
                                 {
                                     gameId: expect.any(Number),
@@ -397,7 +423,9 @@ describe("addGames", function(){
                                     gameLocation: 'testLocation2',
                                     team1Score: 55,
                                     team2Score: 77,
-                                    notes: 'not a test'
+                                    notes: 'not a test',
+                                    tournamentRound: null,
+                                    tournamentGame: null
                                 }]);
     });
 });
@@ -423,7 +451,9 @@ describe("getGames", function(){
                             team1Name: 'testTeam1',
                             team1Color: 'red',
                             team2Name: 'testTeam2',
-                            team2Color: 'black'
+                            team2Color: 'black',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: testGameIds[1],
@@ -442,7 +472,9 @@ describe("getGames", function(){
                             team1Name: 'testTeam2',
                             team1Color: 'black',
                             team2Name: 'testTeam1',
-                            team2Color: 'red'
+                            team2Color: 'red',
+                            tournamentRound: null,
+                            tournamentGame: null
                         }])
     });
 
@@ -465,7 +497,9 @@ describe("getGames", function(){
                             team1Name: 'testTeam1',
                             team1Color: 'red',
                             team2Name: 'testTeam2',
-                            team2Color: 'black'
+                            team2Color: 'black',
+                            tournamentRound: null,
+                            tournamentGame: null
                         },
                         {
                             gameId: testGameIds[1],
@@ -484,18 +518,11 @@ describe("getGames", function(){
                             team1Name: 'testTeam2',
                             team1Color: 'black',
                             team2Name: 'testTeam1',
-                            team2Color: 'red'
+                            team2Color: 'red',
+                            tournamentRound: null,
+                            tournamentGame: null
                         }])
     });
-
-    test("fails no games", async function(){
-        try {
-            await Organization.getGames({teamId: -1});
-            fail();
-        } catch (err) {
-            expect(err instanceof NotFoundError).toBeTruthy();
-        }
-    })
 });
 
 //Get game organization
@@ -535,7 +562,9 @@ describe("updateGame", function(){
                         team1Name: 'testTeam1',
                         team2Name: 'testTeam2',
                         team1Color: 'red',
-                        team2Color: 'black'
+                        team2Color: 'black',
+                        tournamentRound: null,
+                        tournamentGame: null
                     })
     });
 

@@ -8,10 +8,16 @@
         "type": "object",
         "properties": {
             "team1Id" : {
-                "type": "integer"
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]
             },
             "team2Id" : {
-                "type": "integer"
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]
             },
             "gameDate" : {
                 "oneOf": [
@@ -55,12 +61,21 @@
             "notes": {
                 "type": "string",
                 "maxLength": 1000
+            },
+            "tournamentRound" : {
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]  
+            },
+            "tournamentGame" : {
+                "oneOf": [
+                    { "type": "integer" },
+                    { "type": "null" }
+                ]  
             }
         },
         "additionalProperties": false,
-        "required": [
-            "team1Id",
-            "team2Id"
-        ]
+        "required": []
     }
 }

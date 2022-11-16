@@ -207,14 +207,28 @@ class Organization {
 
 
     //Add season to database
-    static async addSeason(title, orgId) {
+    static async addSeason(title, orgId, tournamentFor=null) {
+
+        /**
+         * If tournamentFor is provided, checks that provided value exists.
+         * Sets to null if doesn't exist
+         */
+        if (tournamentFor) {
+            const checkForeignKey = await db.query(
+                `SELECT id FROM seasons WHERE id=$1`,
+                [tournamentFor]
+            );
+            if (!checkForeignKey.rows[0]) tournamentFor = null;
+        };
+
         const result = await db.query(
-            `INSERT INTO seasons (title, org_id)
-            VALUES ($1, $2)
+            `INSERT INTO seasons (title, org_id, tournament_for)
+            VALUES ($1, $2, $3)
             RETURNING id AS "seasonId", 
                     title AS "seasonTitle", 
-                    org_id AS "orgId"`,
-            [title, orgId]
+                    org_id AS "orgId",
+                    tournament_for AS "tournamentFor"`,
+            [title, orgId, tournamentFor]
         );
         const season = result.rows[0];
         if (!season) throw new BadRequestError("Season failed to save");
@@ -224,7 +238,7 @@ class Organization {
     //Get all seasons from an organization
     static async getSeasons(orgId) {
         const result = await db.query(
-            `SELECT id AS "seasonId", title
+            `SELECT id AS "seasonId", title, tournament_for AS "tournamentFor"
             FROM seasons
             WHERE org_id = $1
             ORDER BY id DESC`,
@@ -235,14 +249,17 @@ class Organization {
         return seasons;
     };
 
-    //Get single season basic info
+    //Get single season basic info along with tournament connections
     static async getSeason(seasonId) {
         const result = await db.query(
-            `SELECT id AS "seasonId",
-                    title,
-                    org_id AS "orgId"
-            FROM seasons
-            WHERE id = $1`,
+            `SELECT s1.id AS "seasonId",
+                    s1.title,
+                    s1.org_id AS "orgId",
+                    s1.tournament_for AS "tournamentFor",
+                    s2.id AS "seasonTournament"
+            FROM seasons s1 LEFT JOIN seasons s2
+            ON s1.id = s2.tournament_for
+            WHERE s1.id = $1`,
             [seasonId]
         );
         const season = result.rows[0];
@@ -258,9 +275,11 @@ class Organization {
             WHERE id = $2
             RETURNING id AS "seasonId", 
                     title, 
-                    org_id AS "orgId"`,
+                    org_id AS "orgId",
+                    tournament_for AS "tournamentFor"`,
             [title, seasonId]
         );
+        
         const season = result.rows[0];
         if (!season) throw new NotFoundError("Season not found");
         return season;
@@ -290,7 +309,9 @@ class Organization {
                         gameTime: 'game_time',
                         gameLocation: 'game_location',
                         team1Score: 'team_1_score',
-                        team2Score: 'team_2_score'};
+                        team2Score: 'team_2_score',
+                        tournamentRound: 'tournament_round',
+                        tournamentGame: 'tournament_game'};
 
         const {cols, values, dollars} = sqlForObjectArray(dataArray, jsToSql)
 
@@ -310,7 +331,9 @@ class Organization {
                             game_location AS "gameLocation",
                             team_1_score AS "team1Score",
                             team_2_score AS "team2Score",
-                            notes)
+                            notes,
+                            tournament_round AS "tournamentRound",
+                            tournament_game AS "tournamentGame")
             SELECT * FROM (
                 SELECT games.*, (
                     SELECT team_name FROM teams
@@ -357,10 +380,12 @@ class Organization {
                         game_location AS "gameLocation",
                         team_1_score AS "team1Score",
                         team_2_score AS "team2Score",
-                        notes
+                        notes,
+                        tournament_round AS "tournamentRound",
+                        tournament_game AS "tournamentGame"
                 FROM games
                 WHERE ${query}
-                ORDER BY "gameDate", "gameTime")
+                ORDER BY "gameDate", "gameTime", "gameId")
             SELECT * FROM (
                 SELECT game.*, (
                     SELECT title FROM seasons
@@ -386,7 +411,6 @@ class Organization {
             values
         );
         const games = result.rows;
-        if (!games[0]) throw new NotFoundError("No games found");
         return games;
     };
 
@@ -434,7 +458,9 @@ class Organization {
                             game_location AS "gameLocation",
                             team_1_score AS "team1Score",
                             team_2_score AS "team2Score",
-                            notes)
+                            notes,
+                            tournament_round AS "tournamentRound",
+                            tournament_game AS "tournamentGame")
             SELECT * FROM (
                 SELECT updated.*, (
                     SELECT team_name FROM teams
