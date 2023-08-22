@@ -5,6 +5,7 @@ const { NotFoundError } = require("./expressError");
 const { authenticateJWT } = require("./middleware/auth");
 const usersRoutes = require('./routes/users');
 const organizationRoutes = require('./routes/organizations');
+const herokuRoutes = require('./routes/heroku');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(authenticateJWT);
 
 app.use('/users', usersRoutes);
 app.use('/organizations', organizationRoutes);
+app.use('/heroku', herokuRoutes);
 
 app.use(function (req, res, next) {
     return next(new NotFoundError());
