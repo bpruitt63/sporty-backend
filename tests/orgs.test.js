@@ -959,6 +959,37 @@ describe("PATCH /organizations/:id/seasons/:seasonId/games/:gameId", function(){
             .set("authorization", `Bearer ${bobToken}`);
         expect(resp.statusCode).toEqual(403);
     });
+
+    test('works from GameCP', async function() {
+        const resp = await request(app)
+            .patch(`/organizations/${testOrgIds[0]}/seasons/${testSeasonIds[0]}/games/${testGameIds[1]}`)
+            .send({game: {
+                team1Score: 22,
+                team2Score: 44,
+                source: 'GameCP'
+            }})
+            .set("authorization", `Bearer ${bobToken}`);
+        expect(resp.body).toEqual({game: {
+                                    gameId: testGameIds[1],
+                                    seasonId: testSeasonIds[0],
+                                    team1Id: testTeamIds[1],
+                                    team2Id: testTeamIds[0],
+                                    gameDate: null,
+                                    readableDate: null,
+                                    gameTime: null,
+                                    readableTime: null,
+                                    gameLocation: '',
+                                    team1Score: 22,
+                                    team2Score: 44,
+                                    notes: '',
+                                    team1Name: 'testTeam2',
+                                    team2Name: 'testTeam1',
+                                    team1Color: 'black',
+                                    team2Color: 'red',
+                                    tournamentRound: null,
+                                    tournamentGame: null
+                                }});
+    });
 });
 
 //DELETE game

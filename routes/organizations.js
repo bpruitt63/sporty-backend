@@ -5,6 +5,7 @@ const organizationNewSchema = require('../schemas/organizationNew.json');
 const teamNameSchema = require('../schemas/teamName.json');
 const seasonNameSchema = require('../schemas/seasonName.json');
 const gameSchema = require('../schemas/gameSchema.json');
+const gameCPSchema = require('../schemas/gameCPSchema.json');
 const { createToken, formatGamesList, gamesListToTournament } = require("../helpers");
 const { BadRequestError, ForbiddenError, NotFoundError } = require("../expressError");
 const { ensureLoggedIn, 
@@ -320,7 +321,13 @@ router.patch('/:id/seasons/:seasonId/games/:gameId', ensureLocalEditor, async fu
         const checkId = (await Organization.getGameOrganization(req.params.gameId)).orgId;
         if (checkId != req.params.id) throw new ForbiddenError(`Organization and game don't match`);
 
-        const validator = jsonschema.validate([req.body.game], gameSchema);
+        let validator;
+        if (req.body.game.source) {
+            delete req.body.game.source;
+            validator = jsonschema.validate(req.body.game, gameCPSchema);
+        } else {
+            validator = jsonschema.validate([req.body.game], gameSchema);
+        };
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
